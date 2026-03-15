@@ -1,9 +1,8 @@
-const BASE_URL="http://localhost:5000";
+const BASE_URL="https://digital-evidence-backend.onrender.com";
 
 function getToken(){
 return localStorage.getItem("token");
 }
-
 
 async function createCase(){
 
@@ -28,8 +27,6 @@ alert("Case Created");
 loadCases();
 
 }
-
-
 
 async function loadCases(){
 

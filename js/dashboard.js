@@ -1,5 +1,5 @@
 const token = localStorage.getItem("token");
-
+const API = "https://digital-evidence-backend.onrender.com";
 window.onload = function(){
 
 const role = localStorage.getItem("role");
@@ -185,7 +185,7 @@ document.getElementById("timeline").innerHTML=html;
 
 function connectRealtime(){
 
-const socket = io("http://localhost:5000");
+const socket = io("https://digital-evidence-backend.onrender.com");
 
 socket.on("evidenceActivity",(data)=>{
 

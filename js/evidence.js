@@ -1,4 +1,4 @@
-const BASE_URL="http://localhost:5000";
+const BASE_URL="https://digital-evidence-backend.onrender.com";
 
 function getToken(){
 return localStorage.getItem("token");
@@ -61,7 +61,7 @@ data.forEach(ev=>{
 
 count++;
 
-const div=document.createElement("div");   // IMPORTANT
+const div=document.createElement("div");
 div.className="evidence-card";
 
 let status="Uploaded 🟡";
@@ -159,7 +159,7 @@ alert("Evidence Tampered 🔴");
 
 }
 
-loadEvidence();   // refresh status
+loadEvidence();
 
 }
 
