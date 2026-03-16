@@ -15,18 +15,15 @@ body:JSON.stringify({email,password})
 
 const data=await res.json();
 
-console.log(data);   // debugging
+if(data.accessToken){
 
-if(res.ok){
-
-localStorage.setItem("token",data.token);
-localStorage.setItem("role",data.role || data.user?.role);
+localStorage.setItem("token",data.accessToken);
 
 window.location.href="dashboard.html";
 
 }else{
 
-alert(data.message || "Login Failed");
+alert("Login Failed");
 
 }
 
