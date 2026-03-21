@@ -1,11 +1,17 @@
 const token = localStorage.getItem("token");
 const API = "https://digital-evidence-backend.onrender.com";
 
+// 🔐 Protect page
+if(!token){
+alert("Please login first");
+window.location.href="index.html";
+}
+
 window.onload = function(){
 
 const role = localStorage.getItem("role");
 
-document.getElementById("roleName").innerText = role;
+document.getElementById("roleName").innerText = role || "Not Assigned";
 
 if(role==="admin"){
 document.getElementById("adminPanel").style.display="block";
@@ -16,24 +22,24 @@ connectRealtime();
 
 };
 
-
 // LOAD EVIDENCE
 async function loadEvidence(){
 
 const res = await fetch(`${API}/api/evidence/all`,{
-
 headers:{
 Authorization:"Bearer "+token
 }
-
 });
 
-const data = await res.json();
-
-renderEvidence(data);
-
+if(!res.ok){
+alert("Failed to load evidence");
+return;
 }
 
+const data = await res.json();   // ✅ MISSING THA
+renderEvidence(data);            // ✅ MISSING THA
+
+}
 
 // RENDER EVIDENCE
 function renderEvidence(list){
@@ -65,60 +71,45 @@ container.innerHTML+=`
 
 }
 
-
 // SEARCH
 async function searchEvidence(){
 
 const keyword=document.getElementById("searchEvidence").value;
 
 const res = await fetch(`${API}/api/evidence/search?keyword=${keyword}`,{
-
 headers:{
 Authorization:"Bearer "+token
 }
-
 });
 
 const data = await res.json();
-
 renderEvidence(data);
 
 }
 
-
 // DOWNLOAD
 function downloadEvidence(id){
-
 window.open(`${API}/api/evidence/download/${id}`);
-
 }
-
 
 // VERIFY
 async function verifyEvidence(id){
 
 const res = await fetch(`${API}/api/evidence/verify/${id}`,{
-
 headers:{
 Authorization:"Bearer "+token
 }
-
 });
 
 const data = await res.json();
-
 alert(data.message);
 
 }
 
-
 // CERTIFICATE
 function certificate(id){
-
 window.open(`${API}/api/evidence/certificate/${id}`);
-
 }
-
 
 // PREVIEW
 function previewEvidence(url){
@@ -135,7 +126,6 @@ modal.style.display="block";
 function closePreview(){
 document.getElementById("previewModal").style.display="none";
 }
-
 
 // TIMELINE
 async function loadTimeline(id){
@@ -154,7 +144,6 @@ document.getElementById("timeline").innerHTML=html;
 
 }
 
-
 // REALTIME
 function connectRealtime(){
 
@@ -163,7 +152,6 @@ const socket = io("https://digital-evidence-backend.onrender.com");
 socket.on("evidenceActivity",(data)=>{
 
 alert("New Activity: "+data.message);
-
 loadEvidence();
 
 });
