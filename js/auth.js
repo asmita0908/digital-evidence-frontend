@@ -15,10 +15,12 @@ body:JSON.stringify({email,password})
 
 const data=await res.json();
 
-if(data.token){   // ✅ FIXED
+console.log(data); // 👈 DEBUG (important)
+
+if(data.token){   // ✅ YE HI MAIN FIX HAI
 
 localStorage.setItem("token",data.token);
-localStorage.setItem("role",data.role);  // ✅ ADD THIS
+localStorage.setItem("role",data.role); // (agar backend se aa raha hai)
 
 window.location.href="dashboard.html";
 
