@@ -1,33 +1,30 @@
-const BASE_URL="https://digital-evidence-backend.onrender.com";
+const BASE_URL = "https://digital-evidence-backend.onrender.com";
 
-async function loginUser(){
+async function loginUser() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
+  const res = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, password })
+  });
 
-const res=await fetch(`${BASE_URL}/api/auth/login`,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({email,password})
-});
+  const data = await res.json();
+  console.log(data);
 
-const data=await res.json();
+  const token = data.token || data.accessToken; // 🔥 important
 
-console.log(data); // 👈 DEBUG (important)
+  if (res.ok && token) {
+    localStorage.setItem("token", token);
 
-if(data.token){   // ✅ YE HI MAIN FIX HAI
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    localStorage.setItem("role", payload.role);
 
-localStorage.setItem("token",data.token);
-localStorage.setItem("role",data.role); // (agar backend se aa raha hai)
-
-window.location.href="dashboard.html";
-
-}else{
-
-alert(data.message || "Login Failed");
-
-}
-
+    window.location.href = "dashboard.html";
+  } else {
+    alert(data.message || "Login Failed");
+  }
 }
