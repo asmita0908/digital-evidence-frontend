@@ -13,15 +13,12 @@ async function loginUser() {
   });
 
   const data = await res.json();
+
   console.log(data);
 
-  const token = data.token || data.accessToken; // 🔥 important
-
-  if (res.ok && token) {
-    localStorage.setItem("token", token);
-
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    localStorage.setItem("role", payload.role);
+  if (res.ok) {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role); // ✅ direct store
 
     window.location.href = "dashboard.html";
   } else {
