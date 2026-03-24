@@ -9,15 +9,16 @@ if (!token) {
 
 // PAGE LOAD
 window.onload = function () {
-  const role = localStorage.getItem("role");
 
-  document.getElementById("roleName").innerText = role || "Not Assigned";
+  const role = localStorage.getItem("role");
+  document.getElementById("roleName").innerText = role;
 
   if (role === "admin") {
     document.getElementById("adminPanel").style.display = "block";
   }
 
-  loadEvidence();
+  loadEvidence(); // 🔥 MOST IMPORTANT
+
   connectRealtime();
 };
 
