@@ -18,19 +18,20 @@ async function loginUser() {
 
     console.log("LOGIN RESPONSE:", data);
 
-    // ✅ IMPORTANT CHECK
-    if (res.ok && data.token) {
-      localStorage.setItem("token", data.token);
+    // ✅ FIXED HERE
+    if (res.ok && data.accessToken) {
+      localStorage.setItem("token", data.accessToken);
       localStorage.setItem("role", data.role || "officer");
 
+      alert("Login Success ✅");
       window.location.href = "dashboard.html";
     } else {
-      alert(data.message || "Login Failed");
+      alert(data.message || "Login Failed ❌");
     }
 
   } catch (error) {
     console.log("Login Error:", error);
-    alert("Server Error");
+    alert("Server Error ❌");
   }
 }
 
