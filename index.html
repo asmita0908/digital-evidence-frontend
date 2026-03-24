@@ -8,13 +8,20 @@
 <body>
 
 <div class="card">
-  <h2>Evidence Management System</h2>
-  <h3>Login</h3>
+  <h2>Login</h2>
+  <p>Secure Access</p>
 
-  <input type="email" id="email" placeholder="Enter Email">
-  <input type="password" id="password" placeholder="Enter Password">
+  <label>Email</label>
+  <input type="email" id="email" placeholder="Enter your email">
+
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Enter your password">
 
   <button onclick="loginUser()">Login</button>
+
+  <p style="margin-top:15px;">
+    New user? <a href="register.html">Create account</a>
+  </p>
 </div>
 
 <script src="js/auth.js"></script>

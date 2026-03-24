@@ -1,48 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Register</title>
+  <title>Sign Up - Evidence System</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<h2>Register</h2>
+<div class="card">
+  <h2>Evidence Protection System</h2>
+  <p>Create New Account</p>
 
-<input id="name" placeholder="Name"><br><br>
-<input id="email" placeholder="Email"><br><br>
-<input id="password" placeholder="Password"><br><br>
+  <label>Full Name</label>
+  <input type="text" id="name" placeholder="Enter your full name">
 
-<button onclick="register()">Register</button>
+  <label>Email</label>
+  <input type="email" id="email" placeholder="Enter your email">
 
-<script>
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Create password">
 
-const BASE_URL="https://digital-evidence-backend.onrender.com";
+  <label>Role</label>
+  <select id="role">
+    <option value="">Select role</option>
+    <option value="admin">Admin</option>
+    <option value="officer">Officer</option>
+    <option value="viewer">Viewer</option>
+    <option value="forensic">Forensic</option>
+  </select>
 
-async function register(){
+  <button onclick="registerUser()">Sign Up</button>
 
-const name=document.getElementById("name").value;
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
+  <p style="margin-top:15px;">
+    Already have an account? <a href="index.html">Login</a>
+  </p>
+</div>
 
-const res=await fetch(`${BASE_URL}/api/auth/register`,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-name,
-email,
-password,
-role:"admin"
-})
-});
-
-const data=await res.json();
-
-alert(data.message);
-
-}
-
-</script>
+<script src="js/auth.js"></script>
 
 </body>
 </html>
