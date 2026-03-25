@@ -1,4 +1,3 @@
-const BASE_URL = "https://digital-evidence-backend.onrender.com";
 
 function getToken() {
   return localStorage.getItem("token");
