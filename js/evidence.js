@@ -173,6 +173,7 @@ async function downloadEvidence(id) {
   a.download = "evidence";
   a.click();
 }
+
 async function downloadCertificate(id) {
   const res = await fetch(`${BASE_URL}/api/evidence/certificate/${id}`, {
     headers: {
