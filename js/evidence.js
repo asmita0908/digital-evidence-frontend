@@ -68,8 +68,9 @@ async function loadEvidence() {
       <button onclick="verifyEvidence('${ev._id}')">Verify</button>
       <button onclick="downloadEvidence('${ev._id}')">Download</button>
       <button onclick="viewHistory('${ev._id}')">History</button>
-      <button onclick="previewEvidence('${ev.file}')">Preview</button>
+      <button onclick="previewEvidence('${ev.fileUrl}')">Preview</button>
       <button onclick="deleteEvidence('${ev._id}')">Delete</button>
+      <button onclick="downloadCertificate('${ev._id}')">Certificate</button>
     `;
 
     container.appendChild(div);
@@ -147,13 +148,50 @@ async function verifyEvidence(id) {
 
   const data = await res.json();
 
-  alert(data.verified ? "Evidence Authentic 🟢" : "Evidence Tampered 🔴");
+ alert(data.tampered ? "Evidence Tampered 🔴" : "Evidence Safe 🟢");
   loadEvidence();
 }
 
 // ================= DOWNLOAD =================
-function downloadEvidence(id) {
-  window.open(`${BASE_URL}/api/evidence/download/${id}`);
+async function downloadEvidence(id) {
+  const res = await fetch(`${BASE_URL}/api/evidence/download/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`
+    }
+  });
+
+  if (!res.ok) {
+    alert("Download failed ❌");
+    return;
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "evidence";
+  a.click();
+}
+async function downloadCertificate(id) {
+  const res = await fetch(`${BASE_URL}/api/evidence/certificate/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`
+    }
+  });
+
+  if (!res.ok) {
+    alert("Certificate failed ❌");
+    return;
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "certificate.pdf";
+  a.click();
 }
 
 // ================= DELETE =================
@@ -172,17 +210,15 @@ async function deleteEvidence(id) {
 }
 
 // ================= PREVIEW =================
-function previewEvidence(file) {
+function previewEvidence(fileUrl) {
   const modal = document.getElementById("previewModal");
   const container = document.getElementById("previewContent");
 
   container.innerHTML = "";
 
-  const fileUrl = `${BASE_URL}/uploads/${file}`;
-
-  if (file.match(/\.(jpg|jpeg|png)$/)) {
+  if (fileUrl.match(/\.(jpg|jpeg|png)$/)) {
     container.innerHTML = `<img src="${fileUrl}" width="100%">`;
-  } else if (file.endsWith(".pdf")) {
+  } else if (fileUrl.endsWith(".pdf")) {
     container.innerHTML = `<iframe src="${fileUrl}" width="100%" height="500px"></iframe>`;
   } else {
     container.innerHTML = `<p>No preview available</p>`;
