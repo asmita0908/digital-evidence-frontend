@@ -9,7 +9,6 @@ if (!token) {
 
 // PAGE LOAD
 window.onload = function () {
-
   const role = localStorage.getItem("role");
   document.getElementById("roleName").innerText = role;
 
@@ -17,12 +16,9 @@ window.onload = function () {
     document.getElementById("adminPanel").style.display = "block";
   }
 
-  loadEvidence(); // 🔥 MOST IMPORTANT
-
+  loadEvidence();
   connectRealtime();
 };
-
-
 
 // ============================
 // 📦 LOAD EVIDENCE
@@ -49,8 +45,6 @@ async function loadEvidence() {
   }
 }
 
-
-
 // ============================
 // 🎨 RENDER EVIDENCE
 // ============================
@@ -72,14 +66,12 @@ function renderEvidence(list) {
         <button onclick="previewEvidence('${e.fileUrl}')">Preview</button>
         <button onclick="downloadEvidence('${e._id}')">Download</button>
         <button onclick="verifyEvidence('${e._id}')">Verify</button>
-        <button onclick="certificate('${e._id}')">Certificate</button>
+        <button onclick="downloadCertificate('${e._id}')">Certificate</button>
         <button onclick="loadTimeline('${e._id}')">Timeline</button>
       </div>
     `;
   });
 }
-
-
 
 // ============================
 // 🔍 SEARCH
@@ -97,16 +89,35 @@ async function searchEvidence() {
   renderEvidence(data);
 }
 
-
-
 // ============================
-// 📥 DOWNLOAD
+// 📥 DOWNLOAD (✅ FIXED)
 // ============================
-function downloadEvidence(id) {
-  window.open(`${API}/api/evidence/download/${id}`);
+async function downloadEvidence(id) {
+  try {
+    const res = await fetch(`${API}/api/evidence/download/${id}`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    if (!res.ok) {
+      alert("Download failed ❌");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "evidence";
+    a.click();
+
+  } catch (err) {
+    console.log(err);
+    alert("Error downloading file");
+  }
 }
-
-
 
 // ============================
 // ✔ VERIFY
@@ -119,28 +130,56 @@ async function verifyEvidence(id) {
   });
 
   const data = await res.json();
-  alert(data.message);
+
+  alert(data.tampered ? "Evidence Tampered 🔴" : "Evidence Safe 🟢");
 }
 
-
-
 // ============================
-// 📄 CERTIFICATE
+// 📄 CERTIFICATE (✅ FIXED)
 // ============================
-function certificate(id) {
-  window.open(`${API}/api/evidence/certificate/${id}`);
+async function downloadCertificate(id) {
+  try {
+    const res = await fetch(`${API}/api/evidence/certificate/${id}`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    if (!res.ok) {
+      alert("Certificate failed ❌");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "certificate.pdf";
+    a.click();
+
+  } catch (err) {
+    console.log(err);
+    alert("Error downloading certificate");
+  }
 }
-
-
 
 // ============================
 // 👁 PREVIEW
 // ============================
 function previewEvidence(url) {
   const modal = document.getElementById("previewModal");
+  const container = document.getElementById("previewContent");
 
-  document.getElementById("previewContent").innerHTML =
-    `<img src="${url}" width="300">`;
+  container.innerHTML = "";
+
+  if (url.match(/\.(jpg|jpeg|png)$/)) {
+    container.innerHTML = `<img src="${url}" width="100%">`;
+  } else if (url.endsWith(".pdf")) {
+    container.innerHTML = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
+  } else {
+    container.innerHTML = `<p>No preview available</p>`;
+  }
 
   modal.style.display = "block";
 }
@@ -149,13 +188,15 @@ function closePreview() {
   document.getElementById("previewModal").style.display = "none";
 }
 
-
-
 // ============================
 // 📊 TIMELINE
 // ============================
 async function loadTimeline(id) {
-  const res = await fetch(`${API}/api/custody/timeline/${id}`);
+  const res = await fetch(`${API}/api/custody/timeline/${id}`, {
+    headers: {
+      Authorization: "Bearer " + token
+    }
+  });
 
   const data = await res.json();
 
@@ -168,10 +209,8 @@ async function loadTimeline(id) {
   document.getElementById("timeline").innerHTML = html;
 }
 
-
-
 // ============================
-// 📤 UPLOAD EVIDENCE (🔥 FIXED)
+// 📤 UPLOAD
 // ============================
 async function uploadEvidence() {
   const title = document.getElementById("title").value;
@@ -202,7 +241,6 @@ async function uploadEvidence() {
     if (res.ok) {
       alert("Evidence Uploaded Successfully ✅");
 
-      // clear form
       document.getElementById("title").value = "";
       document.getElementById("description").value = "";
       document.getElementById("file").value = "";
@@ -217,8 +255,6 @@ async function uploadEvidence() {
     alert("Server error during upload");
   }
 }
-
-
 
 // ============================
 // 🔄 REALTIME SOCKET
