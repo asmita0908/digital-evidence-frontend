@@ -1,4 +1,6 @@
+const BASE_URL = "https://digital-evidence-backend.onrender.com";
 
+// ================= TOKEN =================
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -14,7 +16,7 @@ async function uploadEvidence() {
   formData.append("title", title);
   formData.append("description", description);
 
-  await fetch(`${BASE_URL}/api/evidence/upload`, {
+  const res = await fetch(`${BASE_URL}/api/evidence/upload`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getToken()}`
@@ -22,13 +24,17 @@ async function uploadEvidence() {
     body: formData
   });
 
-  alert("Evidence Uploaded ✅");
-  loadEvidence();
+  if (res.ok) {
+    alert("Evidence Uploaded ✅");
+    loadEvidence();
+  } else {
+    alert("Upload Failed ❌");
+  }
 }
 
 // ================= LOAD =================
 async function loadEvidence() {
-  const res = await fetch(`${BASE_URL}/api/evidence`, {
+  const res = await fetch(`${BASE_URL}/api/evidence/all`, {
     headers: {
       Authorization: `Bearer ${getToken()}`
     }
@@ -44,9 +50,6 @@ async function loadEvidence() {
   data.forEach(ev => {
     count++;
 
-    const div = document.createElement("div");
-    div.className = "evidence-card";
-
     let status = "Uploaded 🟡";
     let statusClass = "status-uploaded";
 
@@ -60,6 +63,9 @@ async function loadEvidence() {
       statusClass = "status-tampered";
     }
 
+    const div = document.createElement("div");
+    div.className = "evidence-card";
+
     div.innerHTML = `
       <h3>${ev.title}</h3>
       <span class="status ${statusClass}">${status}</span>
@@ -67,75 +73,16 @@ async function loadEvidence() {
 
       <button onclick="verifyEvidence('${ev._id}')">Verify</button>
       <button onclick="downloadEvidence('${ev._id}')">Download</button>
-      <button onclick="viewHistory('${ev._id}')">History</button>
-      <button onclick="previewEvidence('${ev.fileUrl}')">Preview</button>
-      <button onclick="deleteEvidence('${ev._id}')">Delete</button>
       <button onclick="downloadCertificate('${ev._id}')">Certificate</button>
+      <button onclick="previewEvidence('${ev.fileUrl}')">Preview</button>
+      <button onclick="viewHistory('${ev._id}')">History</button>
+      <button onclick="deleteEvidence('${ev._id}')">Delete</button>
     `;
 
     container.appendChild(div);
   });
 
   createChart(count);
-  setupSearch(); // 🔥 live search
-}
-
-// ================= SEARCH (INPUT FILTER) =================
-function setupSearch() {
-  const input = document.getElementById("searchEvidence");
-  if (!input) return;
-
-  input.addEventListener("keyup", function () {
-    const filter = input.value.toLowerCase();
-    const cards = document.querySelectorAll("#evidenceList .evidence-card");
-
-    cards.forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(filter) ? "block" : "none";
-    });
-  });
-}
-
-// ================= SEARCH BUTTON (SERVER BASED) =================
-async function searchEvidence() {
-  const id = document.getElementById("searchEvidence").value;
-
-  if (!id) {
-    alert("Enter Evidence ID");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/api/evidence/${id}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      const container = document.getElementById("evidenceList");
-      container.innerHTML = "";
-
-      const div = document.createElement("div");
-      div.className = "evidence-card";
-
-      div.innerHTML = `
-        <h3>${data.title}</h3>
-        <p>${data.description}</p>
-      `;
-
-      container.appendChild(div);
-
-    } else {
-      alert("Evidence Not Found ❌");
-    }
-
-  } catch (err) {
-    console.log(err);
-    alert("Search Error ❌");
-  }
 }
 
 // ================= VERIFY =================
@@ -148,17 +95,20 @@ async function verifyEvidence(id) {
 
   const data = await res.json();
 
- alert(data.tampered ? "Evidence Tampered 🔴" : "Evidence Safe 🟢");
-  loadEvidence();
+  alert(data.tampered ? "Evidence Tampered 🔴" : "Evidence Safe 🟢");
 }
 
 // ================= DOWNLOAD =================
 async function downloadEvidence(id) {
+  console.log("TOKEN:", getToken());
+
   const res = await fetch(`${BASE_URL}/api/evidence/download/${id}`, {
     headers: {
       Authorization: `Bearer ${getToken()}`
     }
   });
+
+  console.log("STATUS:", res.status);
 
   if (!res.ok) {
     alert("Download failed ❌");
@@ -174,6 +124,7 @@ async function downloadEvidence(id) {
   a.click();
 }
 
+// ================= CERTIFICATE =================
 async function downloadCertificate(id) {
   const res = await fetch(`${BASE_URL}/api/evidence/certificate/${id}`, {
     headers: {
@@ -195,21 +146,6 @@ async function downloadCertificate(id) {
   a.click();
 }
 
-// ================= DELETE =================
-async function deleteEvidence(id) {
-  if (!confirm("Delete this evidence?")) return;
-
-  await fetch(`${BASE_URL}/api/evidence/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
-
-  alert("Evidence Deleted 🗑️");
-  loadEvidence();
-}
-
 // ================= PREVIEW =================
 function previewEvidence(fileUrl) {
   const modal = document.getElementById("previewModal");
@@ -218,9 +154,9 @@ function previewEvidence(fileUrl) {
   container.innerHTML = "";
 
   if (fileUrl.match(/\.(jpg|jpeg|png)$/)) {
-    container.innerHTML = `<img src="${fileUrl}" width="100%">`;
+    container.innerHTML = `<img src="${BASE_URL}/${fileUrl}" width="100%">`;
   } else if (fileUrl.endsWith(".pdf")) {
-    container.innerHTML = `<iframe src="${fileUrl}" width="100%" height="500px"></iframe>`;
+    container.innerHTML = `<iframe src="${BASE_URL}/${fileUrl}" width="100%" height="500px"></iframe>`;
   } else {
     container.innerHTML = `<p>No preview available</p>`;
   }
@@ -228,11 +164,20 @@ function previewEvidence(fileUrl) {
   modal.style.display = "block";
 }
 
-function closePreview() {
-  document.getElementById("previewModal").style.display = "none";
+// ================= DELETE =================
+async function deleteEvidence(id) {
+  await fetch(`${BASE_URL}/api/evidence/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${getToken()}`
+    }
+  });
+
+  alert("Deleted 🗑️");
+  loadEvidence();
 }
 
-// ================= TIMELINE =================
+// ================= HISTORY =================
 async function viewHistory(id) {
   const res = await fetch(`${BASE_URL}/api/logs/${id}`, {
     headers: {
@@ -247,13 +192,7 @@ async function viewHistory(id) {
 
   data.forEach(log => {
     const div = document.createElement("div");
-    div.className = "timeline-item";
-
-    div.innerHTML = `
-      <b>${log.action}</b><br>
-      ${new Date(log.createdAt).toLocaleString()}
-    `;
-
+    div.innerHTML = `<b>${log.action}</b><br>${new Date(log.createdAt).toLocaleString()}`;
     timeline.appendChild(div);
   });
 }
