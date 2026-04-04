@@ -1,10 +1,10 @@
-const token = localStorage.getItem("token");
 const API = "https://digital-evidence-backend.onrender.com";
+const token = localStorage.getItem("token");
 
-// 🔐 Protect page
+// 🔐 protect
 if (!token) {
-  alert("Please login first");
-  window.location.href = "index.html";
+  alert("Login first");
+  location.href = "index.html";
 }
 
 // PAGE LOAD
@@ -17,45 +17,31 @@ window.onload = function () {
   }
 
   loadEvidence();
-  connectRealtime();
 };
 
-// ============================
-// 📦 LOAD EVIDENCE
-// ============================
-async function loadEvidence() {
-  try {
-    const res = await fetch(`${API}/api/evidence/all`, {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    });
-
-    if (!res.ok) {
-      alert("Failed to load evidence");
-      return;
-    }
-
-    const data = await res.json();
-    renderEvidence(data);
-
-  } catch (err) {
-    console.error(err);
-    alert("Server error");
-  }
+// NAVIGATION
+function goToCases() {
+  location.href = "cases.html";
 }
 
-// ============================
-// 🎨 RENDER EVIDENCE
-// ============================
+function goToProfile() {
+  location.href = "profile.html";
+}
+
+// LOAD
+async function loadEvidence() {
+  const res = await fetch(`${API}/api/evidence/all`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+  renderEvidence(data);
+}
+
+// RENDER
 function renderEvidence(list) {
   const container = document.getElementById("evidenceList");
   container.innerHTML = "";
-
-  if (!list.length) {
-    container.innerHTML = "<p>No evidence found</p>";
-    return;
-  }
 
   list.forEach(e => {
     container.innerHTML += `
@@ -73,135 +59,79 @@ function renderEvidence(list) {
   });
 }
 
-// ============================
-// 🔍 SEARCH
-// ============================
+// DOWNLOAD
+async function downloadEvidence(id) {
+  const res = await fetch(`${API}/api/evidence/download/${id}`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "file";
+  a.click();
+}
+
+// CERTIFICATE
+async function downloadCertificate(id) {
+  const res = await fetch(`${API}/api/evidence/certificate/${id}`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "certificate.pdf";
+  a.click();
+}
+
+// VERIFY
+async function verifyEvidence(id) {
+  const res = await fetch(`${API}/api/evidence/verify/${id}`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
+
+// SEARCH
 async function searchEvidence() {
   const keyword = document.getElementById("searchEvidence").value;
 
   const res = await fetch(`${API}/api/evidence/search?keyword=${keyword}`, {
-    headers: {
-      Authorization: "Bearer " + token
-    }
+    headers: { Authorization: "Bearer " + token }
   });
 
   const data = await res.json();
   renderEvidence(data);
 }
 
-// ============================
-// 📥 DOWNLOAD (✅ FIXED)
-// ============================
-async function downloadEvidence(id) {
-  try {
-    const res = await fetch(`${API}/api/evidence/download/${id}`, {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    });
-
-    if (!res.ok) {
-      alert("Download failed ❌");
-      return;
-    }
-
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "evidence";
-    a.click();
-
-  } catch (err) {
-    console.log(err);
-    alert("Error downloading file");
-  }
-}
-
-// ============================
-// ✔ VERIFY
-// ============================
-async function verifyEvidence(id) {
-  const res = await fetch(`${API}/api/evidence/verify/${id}`, {
-    headers: {
-      Authorization: "Bearer " + token
-    }
-  });
-
-  const data = await res.json();
-
-  alert(data.tampered ? "Evidence Tampered 🔴" : "Evidence Safe 🟢");
-}
-
-// ============================
-// 📄 CERTIFICATE (✅ FIXED)
-// ============================
-async function downloadCertificate(id) {
-  try {
-    const res = await fetch(`${API}/api/evidence/certificate/${id}`, {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    });
-
-    if (!res.ok) {
-      alert("Certificate failed ❌");
-      return;
-    }
-
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "certificate.pdf";
-    a.click();
-
-  } catch (err) {
-    console.log(err);
-    alert("Error downloading certificate");
-  }
-}
-
-// ============================
-// 👁 PREVIEW
-// ============================
+// PREVIEW
 function previewEvidence(url) {
-  const modal = document.getElementById("previewModal");
-  const container = document.getElementById("previewContent");
+  document.getElementById("previewContent").innerHTML =
+    `<img src="${url}" width="100%">`;
 
-  container.innerHTML = "";
-
-  if (url.match(/\.(jpg|jpeg|png)$/)) {
-    container.innerHTML = `<img src="${url}" width="100%">`;
-  } else if (url.endsWith(".pdf")) {
-    container.innerHTML = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
-  } else {
-    container.innerHTML = `<p>No preview available</p>`;
-  }
-
-  modal.style.display = "block";
+  document.getElementById("previewModal").style.display = "block";
 }
 
 function closePreview() {
   document.getElementById("previewModal").style.display = "none";
 }
 
-// ============================
-// 📊 TIMELINE
-// ============================
+// TIMELINE
 async function loadTimeline(id) {
   const res = await fetch(`${API}/api/custody/timeline/${id}`, {
-    headers: {
-      Authorization: "Bearer " + token
-    }
+    headers: { Authorization: "Bearer " + token }
   });
 
   const data = await res.json();
 
   let html = "";
-
   data.forEach(t => {
     html += `<p>${t.action} - ${new Date(t.createdAt).toLocaleString()}</p>`;
   });
@@ -209,61 +139,23 @@ async function loadTimeline(id) {
   document.getElementById("timeline").innerHTML = html;
 }
 
-// ============================
-// 📤 UPLOAD
-// ============================
+// UPLOAD
 async function uploadEvidence() {
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
   const file = document.getElementById("file").files[0];
-
-  if (!title || !description || !file) {
-    alert("All fields are required");
-    return;
-  }
 
   const formData = new FormData();
   formData.append("title", title);
   formData.append("description", description);
   formData.append("file", file);
 
-  try {
-    const res = await fetch(`${API}/api/evidence/upload`, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token
-      },
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Evidence Uploaded Successfully ✅");
-
-      document.getElementById("title").value = "";
-      document.getElementById("description").value = "";
-      document.getElementById("file").value = "";
-
-      loadEvidence();
-    } else {
-      alert(data.message || "Upload Failed ❌");
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("Server error during upload");
-  }
-}
-
-// ============================
-// 🔄 REALTIME SOCKET
-// ============================
-function connectRealtime() {
-  const socket = io(API);
-
-  socket.on("evidenceActivity", (data) => {
-    alert("New Activity: " + data.message);
-    loadEvidence();
+  const res = await fetch(`${API}/api/evidence/upload`, {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token },
+    body: formData
   });
+
+  alert("Uploaded ✅");
+  loadEvidence();
 }

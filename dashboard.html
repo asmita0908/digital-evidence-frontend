@@ -1,101 +1,76 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <title>Digital Evidence Dashboard</title>
-
   <link rel="stylesheet" href="style.css">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Socket.io -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
-  <!-- JS Files -->
- <script src="js/auth.js"></script>
-<script src="js/evidence.js"></script> <!-- 🔥 MUST -->
-<script src="js/dashboard.js"></script>
-
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
 </head>
 
 <body>
 
-  <h1>Digital Evidence Dashboard</h1>
+<h1>Digital Evidence Dashboard</h1>
 
-  <button onclick="logout()">Logout</button>
+<button onclick="logout()">Logout</button>
 
-  <!-- USER ROLE -->
+<!-- ROLE -->
+<div class="card">
+  <h3>User Role: <span id="roleName"></span></h3>
+</div>
+
+<!-- NAVIGATION -->
+<div class="card">
+  <h2>Navigation</h2>
+  <button onclick="goToCases()">Cases</button>
+  <button onclick="goToProfile()">Profile</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="card" id="adminPanel" style="display:none">
+  <h2>Admin Panel</h2>
+  <button onclick="location.href='admin.html'">Manage Users</button>
+  <button onclick="location.href='logs.html'">Logs</button>
+</div>
+
+<!-- UPLOAD -->
+<div class="card">
+  <h2>Upload Evidence</h2>
+  <input id="title" placeholder="Title"><br><br>
+  <input id="description" placeholder="Description"><br><br>
+  <input type="file" id="file"><br><br>
+  <button onclick="uploadEvidence()">Upload</button>
+</div>
+
+<!-- SEARCH -->
+<div class="card">
+  <h2>Search</h2>
+  <input id="searchEvidence" placeholder="Search..."><br><br>
+  <button onclick="searchEvidence()">Search</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <h2>Evidence List</h2>
+  <div id="evidenceList"></div>
+</div>
+
+<!-- TIMELINE -->
+<div class="card">
+  <h2>Timeline</h2>
+  <div id="timeline"></div>
+</div>
+
+<!-- PREVIEW -->
+<div id="previewModal" style="display:none">
   <div class="card">
-    <h3>User Role : <span id="roleName"></span></h3>
+    <div id="previewContent"></div>
+    <button onclick="closePreview()">Close</button>
   </div>
-
-  <!-- ADMIN PANEL -->
-  <div class="card" id="adminPanel" style="display:none">
-    <h2>Admin Panel</h2>
-
-    <button onclick="window.location.href='admin.html'">
-      Manage Users
-    </button>
-
-    <button onclick="window.location.href='logs.html'">
-      View Logs
-    </button>
-  </div>
-
-  <!-- UPLOAD EVIDENCE -->
-  <div class="card">
-    <h2>Upload Evidence</h2>
-
-    <input type="text" id="title" placeholder="Title"><br><br>
-
-    <input type="text" id="description" placeholder="Description"><br><br>
-
-    <input type="file" id="file"><br><br>
-
-    <button onclick="uploadEvidence()">Upload</button>
-  </div>
-
-  <!-- SEARCH -->
-  <div class="card">
-    <h2>Search Evidence</h2>
-
-    <input type="text" id="searchEvidence" placeholder="Search evidence...">
-    <br><br>
-
-    <button onclick="searchEvidence()">Search</button>
-  </div>
-
-  <!-- DASHBOARD CHART -->
-  <div class="card">
-    <h2>Evidence Statistics</h2>
-    <canvas id="evidenceChart"></canvas>
-  </div>
-
-  <!-- EVIDENCE LIST -->
-  <div class="card">
-    <h2>Evidence List</h2>
-    <div id="evidenceList"></div>
-  </div>
-
-  <!-- TIMELINE -->
-  <div class="card">
-    <h2>Evidence Timeline</h2>
-    <div id="timeline"></div>
-  </div>
-
-  <!-- PREVIEW MODAL -->
-  <div id="previewModal" style="display:none">
-    <div class="card">
-      <h2>Evidence Preview</h2>
-
-      <div id="previewContent"></div>
-
-      <br>
-      <button onclick="closePreview()">Close</button>
-    </div>
-  </div>
+</div>
 
 </body>
-
 </html>
