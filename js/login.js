@@ -1,6 +1,9 @@
 const BASE_URL = "https://digital-evidence-backend.onrender.com";
 
-async function login() {
+async function login(event) {
+
+  event.preventDefault(); // 🔥 VERY IMPORTANT
+
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
@@ -16,7 +19,6 @@ async function login() {
 
   console.log("LOGIN RESPONSE:", data);
 
-  // 🔥 SUPER SAFE CHECK
   if (data.token) {
 
     localStorage.setItem("token", data.token);
