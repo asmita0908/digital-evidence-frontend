@@ -1,25 +1,23 @@
-const BASE_URL="https://digital-evidence-backend.onrender.com";
+// ==========================
+// LOAD PROFILE
+// ==========================
+window.onload = function () {
+  const name = localStorage.getItem("name");
+  const email = localStorage.getItem("email");
+  const role = localStorage.getItem("role");
 
-function getToken(){
-return localStorage.getItem("token");
+  console.log("PROFILE DATA:", name, email, role);
+
+  document.getElementById("userName").innerText = name || "N/A";
+  document.getElementById("userEmail").innerText = email || "N/A";
+  document.getElementById("userRole").innerText = role || "N/A";
+};
+
+
+// ==========================
+// LOGOUT
+// ==========================
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
 }
-
-async function loadProfile(){
-
-const res=await fetch(`${BASE_URL}/api/users/profile`,{
-
-headers:{
-Authorization:`Bearer ${getToken()}`
-}
-
-});
-
-const user=await res.json();
-
-document.getElementById("userName").innerText=user.name;
-document.getElementById("userEmail").innerText=user.email;
-document.getElementById("userRole").innerText=user.role;
-
-}
-
-window.onload=loadProfile;
