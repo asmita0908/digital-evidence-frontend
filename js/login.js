@@ -14,17 +14,17 @@ async function login() {
 
   const data = await res.json();
 
-  console.log("LOGIN RESPONSE:", data); // 🔥 DEBUG
+  console.log("LOGIN RESPONSE:", data);
 
-  // ✅ FIX: status check instead of res.ok
-  if (data.status === "success") {
+  // 🔥 SUPER SAFE CHECK
+  if (data.token) {
 
     localStorage.setItem("token", data.token);
-    localStorage.setItem("role", data.user.role);
-    localStorage.setItem("name", data.user.name);
-    localStorage.setItem("email", data.user.email);
+    localStorage.setItem("role", data.user?.role);
+    localStorage.setItem("name", data.user?.name);
+    localStorage.setItem("email", data.user?.email);
 
-    window.location = "dashboard.html";
+    window.location.href = "dashboard.html";
 
   } else {
     alert(data.message || "Login Failed ❌");
