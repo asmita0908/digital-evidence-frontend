@@ -18,13 +18,19 @@ async function loginUser() {
 
     console.log("LOGIN RESPONSE:", data);
 
-    // ✅ FIXED HERE
-    if (res.ok && data.accessToken) {
-      localStorage.setItem("token", data.accessToken);
-      localStorage.setItem("role", data.role || "officer");
+    // 🔥 FIXED CONDITION
+    if (data.token) {
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.user.role);
+      localStorage.setItem("name", data.user.name);
+      localStorage.setItem("email", data.user.email);
 
       alert("Login Success ✅");
+
+      // redirect
       window.location.href = "dashboard.html";
+
     } else {
       alert(data.message || "Login Failed ❌");
     }
@@ -55,22 +61,21 @@ async function registerUser() {
     const data = await res.json();
 
     if (res.ok) {
-      alert("Registration Successful");
+      alert("Registration Successful ✅");
       window.location.href = "index.html";
     } else {
-      alert(data.message || "Registration Failed");
+      alert(data.message || "Registration Failed ❌");
     }
 
   } catch (error) {
     console.log("Register Error:", error);
-    alert("Server Error");
+    alert("Server Error ❌");
   }
 }
 
 
 // ================= LOGOUT =================
 function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
+  localStorage.clear(); // 🔥 better
   window.location.href = "index.html";
 }
