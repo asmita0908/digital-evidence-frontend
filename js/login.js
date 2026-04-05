@@ -14,15 +14,19 @@ async function login() {
 
   const data = await res.json();
 
-  if (res.ok) {
-    // ✅ FIXED STORAGE
+  console.log("LOGIN RESPONSE:", data); // 🔥 DEBUG
+
+  // ✅ FIX: status check instead of res.ok
+  if (data.status === "success") {
+
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.user.role);
     localStorage.setItem("name", data.user.name);
     localStorage.setItem("email", data.user.email);
 
     window.location = "dashboard.html";
+
   } else {
-    alert(data.message || "Login Failed");
+    alert(data.message || "Login Failed ❌");
   }
 }
