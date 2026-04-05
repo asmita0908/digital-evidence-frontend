@@ -10,7 +10,9 @@ if (!token) {
 // PAGE LOAD
 window.onload = function () {
   const role = localStorage.getItem("role");
-  document.getElementById("roleName").innerText = role;
+
+  // ✅ FIX: fallback
+  document.getElementById("roleName").innerText = role || "No Role";
 
   if (role === "admin") {
     document.getElementById("adminPanel").style.display = "block";
@@ -59,19 +61,32 @@ function renderEvidence(list) {
   });
 }
 
-// DOWNLOAD
+// 🔥 DOWNLOAD FIX (IMPORTANT)
 async function downloadEvidence(id) {
-  const res = await fetch(`${API}/api/evidence/download/${id}`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(`${API}/api/evidence/download/${id}`, {
+      headers: { Authorization: "Bearer " + token }
+    });
 
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
+    // ❌ agar error aya
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.message || "Download failed");
+      return;
+    }
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "file";
-  a.click();
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "file";
+    a.click();
+
+  } catch (err) {
+    console.log(err);
+    alert("Download error");
+  }
 }
 
 // CERTIFICATE
@@ -89,14 +104,22 @@ async function downloadCertificate(id) {
   a.click();
 }
 
-// VERIFY
+// 🔥 VERIFY FIX (PUT METHOD)
 async function verifyEvidence(id) {
-  const res = await fetch(`${API}/api/evidence/verify/${id}`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(`${API}/api/evidence/verify/${id}`, {
+      method: "PUT", // ✅ FIX
+      headers: { Authorization: "Bearer " + token }
+    });
 
-  const data = await res.json();
-  alert(data.message);
+    const data = await res.json();
+    alert(data.message);
+
+    loadEvidence(); // refresh
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 // SEARCH
