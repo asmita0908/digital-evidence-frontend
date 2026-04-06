@@ -7,19 +7,40 @@ if (!token) {
   location.href = "index.html";
 }
 
-// PAGE LOAD
+// ================= INIT =================
 window.onload = function () {
   const role = localStorage.getItem("role");
 
-  // ✅ FIX: fallback
   document.getElementById("roleName").innerText = role || "No Role";
 
   if (role === "admin") {
     document.getElementById("adminPanel").style.display = "block";
   }
 
+  loadCasesDropdown(); // 🔥 NEW
   loadEvidence();
 };
+
+// ================= LOAD CASES =================
+async function loadCasesDropdown() {
+  const res = await fetch(`${API}/api/cases`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+
+  const dropdown = document.getElementById("caseSelect");
+  if (!dropdown) return;
+
+  dropdown.innerHTML = `<option value="">Select Case</option>`;
+
+  data.forEach(c => {
+    const option = document.createElement("option");
+    option.value = c._id;
+    option.textContent = `${c.title}`;
+    dropdown.appendChild(option);
+  });
+}
 
 // NAVIGATION
 function goToCases() {
@@ -30,7 +51,7 @@ function goToProfile() {
   location.href = "profile.html";
 }
 
-// LOAD
+// ================= LOAD ALL =================
 async function loadEvidence() {
   const res = await fetch(`${API}/api/evidence/all`, {
     headers: { Authorization: "Bearer " + token }
@@ -40,7 +61,24 @@ async function loadEvidence() {
   renderEvidence(data);
 }
 
-// RENDER
+// ================= SEARCH BY CASE =================
+async function searchByCase() {
+  const caseId = document.getElementById("searchCase").value;
+
+  if (!caseId) {
+    alert("Enter Case ID ❌");
+    return;
+  }
+
+  const res = await fetch(`${API}/api/evidence/case/${caseId}`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+  renderEvidence(data);
+}
+
+// ================= RENDER =================
 function renderEvidence(list) {
   const container = document.getElementById("evidenceList");
   container.innerHTML = "";
@@ -50,6 +88,7 @@ function renderEvidence(list) {
       <div class="card">
         <h3>${e.title}</h3>
         <p>${e.description}</p>
+        <p><b>Case:</b> ${e.case?.title || e.case}</p>
 
         <button onclick="previewEvidence('${e.fileUrl}')">Preview</button>
         <button onclick="downloadEvidence('${e._id}')">Download</button>
@@ -61,17 +100,16 @@ function renderEvidence(list) {
   });
 }
 
-// 🔥 DOWNLOAD FIX (IMPORTANT)
+// ================= DOWNLOAD =================
 async function downloadEvidence(id) {
   try {
     const res = await fetch(`${API}/api/evidence/download/${id}`, {
       headers: { Authorization: "Bearer " + token }
     });
 
-    // ❌ agar error aya
     if (!res.ok) {
       const data = await res.json();
-      alert(data.message || "Download failed");
+      alert(data.message || "File missing ❌ (old uploads deleted)");
       return;
     }
 
@@ -84,12 +122,24 @@ async function downloadEvidence(id) {
     a.click();
 
   } catch (err) {
-    console.log(err);
     alert("Download error");
   }
 }
 
-// CERTIFICATE
+// ================= VERIFY =================
+async function verifyEvidence(id) {
+  const res = await fetch(`${API}/api/evidence/verify/${id}`, {
+    method: "PUT",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  loadEvidence();
+}
+
+// ================= CERTIFICATE =================
 async function downloadCertificate(id) {
   const res = await fetch(`${API}/api/evidence/certificate/${id}`, {
     headers: { Authorization: "Bearer " + token }
@@ -104,37 +154,39 @@ async function downloadCertificate(id) {
   a.click();
 }
 
-// 🔥 VERIFY FIX (PUT METHOD)
-async function verifyEvidence(id) {
-  try {
-    const res = await fetch(`${API}/api/evidence/verify/${id}`, {
-      method: "PUT", // ✅ FIX
-      headers: { Authorization: "Bearer " + token }
-    });
+// ================= UPLOAD (FIXED) =================
+async function uploadEvidence() {
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const file = document.getElementById("file").files[0];
+  const caseId = document.getElementById("caseSelect").value; // 🔥 NEW
 
-    const data = await res.json();
-    alert(data.message);
+  if (!title || !description || !file || !caseId) {
+    alert("All fields required ❌");
+    return;
+  }
 
-    loadEvidence(); // refresh
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("file", file);
+  formData.append("caseId", caseId); // 🔥 IMPORTANT
 
-  } catch (err) {
-    console.log(err);
+  const res = await fetch(`${API}/api/evidence/upload`, {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token },
+    body: formData
+  });
+
+  if (res.ok) {
+    alert("Uploaded ✅");
+    loadEvidence();
+  } else {
+    alert("Upload failed ❌");
   }
 }
 
-// SEARCH
-async function searchEvidence() {
-  const keyword = document.getElementById("searchEvidence").value;
-
-  const res = await fetch(`${API}/api/evidence/search?keyword=${keyword}`, {
-    headers: { Authorization: "Bearer " + token }
-  });
-
-  const data = await res.json();
-  renderEvidence(data);
-}
-
-// PREVIEW
+// ================= PREVIEW =================
 function previewEvidence(url) {
   document.getElementById("previewContent").innerHTML =
     `<img src="${url}" width="100%">`;
@@ -146,7 +198,7 @@ function closePreview() {
   document.getElementById("previewModal").style.display = "none";
 }
 
-// TIMELINE
+// ================= TIMELINE =================
 async function loadTimeline(id) {
   const res = await fetch(`${API}/api/custody/timeline/${id}`, {
     headers: { Authorization: "Bearer " + token }
@@ -160,25 +212,4 @@ async function loadTimeline(id) {
   });
 
   document.getElementById("timeline").innerHTML = html;
-}
-
-// UPLOAD
-async function uploadEvidence() {
-  const title = document.getElementById("title").value;
-  const description = document.getElementById("description").value;
-  const file = document.getElementById("file").files[0];
-
-  const formData = new FormData();
-  formData.append("title", title);
-  formData.append("description", description);
-  formData.append("file", file);
-
-  const res = await fetch(`${API}/api/evidence/upload`, {
-    method: "POST",
-    headers: { Authorization: "Bearer " + token },
-    body: formData
-  });
-
-  alert("Uploaded ✅");
-  loadEvidence();
 }

@@ -5,6 +5,32 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
+// ================= LOAD CASES DROPDOWN =================
+async function loadCasesDropdown() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
+
+    const data = await res.json();
+
+    const select = document.getElementById("caseId");
+
+    if (!select) return;
+
+    select.innerHTML = `<option value="">Select Case</option>`;
+
+    data.forEach(c => {
+      select.innerHTML += `<option value="${c._id}">${c.title}</option>`;
+    });
+
+  } catch (err) {
+    console.log("Case load error:", err);
+  }
+}
+
 // ================= UPLOAD =================
 async function uploadEvidence() {
   const file = document.getElementById("file").files[0];
@@ -33,7 +59,7 @@ async function uploadEvidence() {
 
   if (res.ok) {
     alert("Evidence Uploaded ✅");
-    window.location.href = "dashboard.html";
+    loadEvidence();
   } else {
     alert("Upload Failed ❌");
   }
@@ -70,7 +96,7 @@ async function searchByCase() {
   renderEvidence(data);
 }
 
-// ================= RENDER =================
+// ================= GROUPED RENDER 🔥 =================
 function renderEvidence(data) {
   const container = document.getElementById("evidenceList");
   container.innerHTML = "";
@@ -80,23 +106,43 @@ function renderEvidence(data) {
     return;
   }
 
+  const grouped = {};
+
   data.forEach(ev => {
-    const div = document.createElement("div");
+    const caseName = ev.case?.title || "No Case";
 
-    div.className = "card";
+    if (!grouped[caseName]) {
+      grouped[caseName] = [];
+    }
 
-    div.innerHTML = `
-      <h3>${ev.title}</h3>
-      <p>${ev.description}</p>
-      <p><b>Case ID:</b> ${ev.case?._id || ev.case}</p>
-
-      <button onclick="verifyEvidence('${ev._id}')">Verify</button>
-      <button onclick="downloadEvidence('${ev._id}')">Download</button>
-      <button onclick="downloadCertificate('${ev._id}')">Certificate</button>
-    `;
-
-    container.appendChild(div);
+    grouped[caseName].push(ev);
   });
+
+  for (let caseName in grouped) {
+    const caseDiv = document.createElement("div");
+    caseDiv.className = "card";
+
+    caseDiv.innerHTML = `<h2>📁 ${caseName}</h2>`;
+
+    grouped[caseName].forEach(ev => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <h3>${ev.title}</h3>
+        <p>${ev.description}</p>
+
+        <button onclick="verifyEvidence('${ev._id}')">Verify</button>
+        <button onclick="downloadEvidence('${ev._id}')">Download</button>
+        <button onclick="downloadCertificate('${ev._id}')">Certificate</button>
+        <button onclick="viewHistory('${ev._id}')">History</button>
+      `;
+
+      caseDiv.appendChild(div);
+    });
+
+    container.appendChild(caseDiv);
+  }
 }
 
 // ================= VERIFY =================
@@ -120,8 +166,11 @@ async function downloadEvidence(id) {
     }
   });
 
-  if (!res.ok) {
-    alert("File missing ❌");
+  const contentType = res.headers.get("content-type");
+
+  if (contentType && contentType.includes("application/json")) {
+    const data = await res.json();
+    alert(data.message); // old file missing
     return;
   }
 
@@ -151,5 +200,28 @@ async function downloadCertificate(id) {
   a.click();
 }
 
+// ================= HISTORY =================
+async function viewHistory(id) {
+  const res = await fetch(`${BASE_URL}/api/logs/${id}`, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`
+    }
+  });
+
+  const data = await res.json();
+
+  const timeline = document.getElementById("timeline");
+  timeline.innerHTML = "";
+
+  data.forEach(log => {
+    const div = document.createElement("div");
+    div.innerHTML = `<b>${log.action}</b><br>${new Date(log.createdAt).toLocaleString()}`;
+    timeline.appendChild(div);
+  });
+}
+
 // ================= AUTO LOAD =================
-window.onload = loadEvidence;
+window.onload = () => {
+  loadCasesDropdown(); // 🔥 dropdown auto load
+  loadEvidence();      // 🔥 evidence auto load
+};

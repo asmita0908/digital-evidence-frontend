@@ -39,17 +39,25 @@
 <!-- UPLOAD -->
 <div class="card">
   <h2>Upload Evidence</h2>
+
   <input id="title" placeholder="Title"><br><br>
   <input id="description" placeholder="Description"><br><br>
+
+  <!-- ✅ CASE DROPDOWN -->
+  <select id="caseSelect">
+    <option value="">Select Case</option>
+  </select><br><br>
+
   <input type="file" id="file"><br><br>
+
   <button onclick="uploadEvidence()">Upload</button>
 </div>
 
-<!-- SEARCH BY CASE -->
+<!-- SEARCH -->
 <div class="card">
   <h2>Search by Case</h2>
 
-  <input type="text" id="searchCase" placeholder="Enter Case ID">
+  <input id="searchCase" placeholder="Enter Case ID"><br><br>
 
   <button onclick="searchByCase()">Search</button>
   <button onclick="loadEvidence()">Show All</button>
@@ -65,14 +73,6 @@
 <div class="card">
   <h2>Timeline</h2>
   <div id="timeline"></div>
-</div>
-
-<!-- PREVIEW -->
-<div id="previewModal" style="display:none">
-  <div class="card">
-    <div id="previewContent"></div>
-    <button onclick="closePreview()">Close</button>
-  </div>
 </div>
 
 </body>
