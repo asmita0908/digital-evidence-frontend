@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Upload Evidence</title>
 
-<title>Upload Evidence</title>
-<script src="js/auth.js"></script>
-<script src="js/evidence.js"></script>
+  <link rel="stylesheet" href="style.css">
 
-<link rel="stylesheet" href="style.css">
-
+  <script src="js/auth.js"></script>
+  <script src="js/evidence.js"></script>
 </head>
 
 <body>
 
 <div class="card">
 
-<h2>Upload Evidence</h2>
+  <h2>Upload Evidence</h2>
 
-<label>Title</label>
-<input type="text" id="title">
+  <label>Title</label>
+  <input type="text" id="title">
 
-<label>Description</label>
-<input type="text" id="description">
+  <label>Description</label>
+  <input type="text" id="description">
 
-<label>File</label>
-<input type="file" id="file">
+  <label>Case ID</label>
+  <input type="text" id="caseId" placeholder="Enter Case ID">
 
-<button onclick="uploadEvidence()">Upload</button>
+  <label>File</label>
+  <input type="file" id="file">
 
-<br><br>
+  <button onclick="uploadEvidence()">Upload</button>
 
-<button onclick="goDashboard()">Back</button>
+  <br><br>
+
+  <button onclick="window.location.href='dashboard.html'">Back</button>
 
 </div>
-
-<script src="script.js"></script>
 
 </body>
 </html>

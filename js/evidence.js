@@ -10,11 +10,18 @@ async function uploadEvidence() {
   const file = document.getElementById("file").files[0];
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
+  const caseId = document.getElementById("caseId").value;
+
+  if (!file || !title || !description || !caseId) {
+    alert("All fields required ❌");
+    return;
+  }
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("title", title);
   formData.append("description", description);
+  formData.append("caseId", caseId);
 
   const res = await fetch(`${BASE_URL}/api/evidence/upload`, {
     method: "POST",
@@ -26,13 +33,13 @@ async function uploadEvidence() {
 
   if (res.ok) {
     alert("Evidence Uploaded ✅");
-    loadEvidence();
+    window.location.href = "dashboard.html";
   } else {
     alert("Upload Failed ❌");
   }
 }
 
-// ================= LOAD =================
+// ================= LOAD ALL =================
 async function loadEvidence() {
   const res = await fetch(`${BASE_URL}/api/evidence/all`, {
     headers: {
@@ -41,77 +48,80 @@ async function loadEvidence() {
   });
 
   const data = await res.json();
-
-  const container = document.getElementById("evidenceList");
-  container.innerHTML = "";
-
-  let count = 0;
-
-  data.forEach(ev => {
-    count++;
-
-    let status = "Uploaded 🟡";
-    let statusClass = "status-uploaded";
-
-    if (ev.verified === true) {
-      status = "Verified 🟢";
-      statusClass = "status-verified";
-    }
-
-    if (ev.verified === false) {
-      status = "Tampered 🔴";
-      statusClass = "status-tampered";
-    }
-
-    const div = document.createElement("div");
-    div.className = "evidence-card";
-
-    div.innerHTML = `
-      <h3>${ev.title}</h3>
-      <span class="status ${statusClass}">${status}</span>
-      <p>${ev.description}</p>
-
-      <button onclick="verifyEvidence('${ev._id}')">Verify</button>
-      <button onclick="downloadEvidence('${ev._id}')">Download</button>
-      <button onclick="downloadCertificate('${ev._id}')">Certificate</button>
-      <button onclick="previewEvidence('${ev.fileUrl}')">Preview</button>
-      <button onclick="viewHistory('${ev._id}')">History</button>
-      <button onclick="deleteEvidence('${ev._id}')">Delete</button>
-    `;
-
-    container.appendChild(div);
-  });
-
-  createChart(count);
+  renderEvidence(data);
 }
 
-// ================= VERIFY =================
-async function verifyEvidence(id) {
-  const res = await fetch(`${BASE_URL}/api/evidence/verify/${id}`, {
+// ================= SEARCH BY CASE =================
+async function searchByCase() {
+  const caseId = document.getElementById("searchCase").value;
+
+  if (!caseId) {
+    alert("Enter Case ID ❌");
+    return;
+  }
+
+  const res = await fetch(`${BASE_URL}/api/evidence/case/${caseId}`, {
     headers: {
       Authorization: `Bearer ${getToken()}`
     }
   });
 
   const data = await res.json();
+  renderEvidence(data);
+}
 
-  alert(data.tampered ? "Evidence Tampered 🔴" : "Evidence Safe 🟢");
+// ================= RENDER =================
+function renderEvidence(data) {
+  const container = document.getElementById("evidenceList");
+  container.innerHTML = "";
+
+  if (data.length === 0) {
+    container.innerHTML = "<p>No Evidence Found ❌</p>";
+    return;
+  }
+
+  data.forEach(ev => {
+    const div = document.createElement("div");
+
+    div.className = "card";
+
+    div.innerHTML = `
+      <h3>${ev.title}</h3>
+      <p>${ev.description}</p>
+      <p><b>Case ID:</b> ${ev.case?._id || ev.case}</p>
+
+      <button onclick="verifyEvidence('${ev._id}')">Verify</button>
+      <button onclick="downloadEvidence('${ev._id}')">Download</button>
+      <button onclick="downloadCertificate('${ev._id}')">Certificate</button>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// ================= VERIFY =================
+async function verifyEvidence(id) {
+  const res = await fetch(`${BASE_URL}/api/evidence/verify/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${getToken()}`
+    }
+  });
+
+  const data = await res.json();
+  alert(data.message);
 }
 
 // ================= DOWNLOAD =================
 async function downloadEvidence(id) {
-  console.log("TOKEN:", getToken());
-
   const res = await fetch(`${BASE_URL}/api/evidence/download/${id}`, {
     headers: {
       Authorization: `Bearer ${getToken()}`
     }
   });
 
-  console.log("STATUS:", res.status);
-
   if (!res.ok) {
-    alert("Download failed ❌");
+    alert("File missing ❌");
     return;
   }
 
@@ -132,11 +142,6 @@ async function downloadCertificate(id) {
     }
   });
 
-  if (!res.ok) {
-    alert("Certificate failed ❌");
-    return;
-  }
-
   const blob = await res.blob();
   const url = window.URL.createObjectURL(blob);
 
@@ -146,70 +151,5 @@ async function downloadCertificate(id) {
   a.click();
 }
 
-// ================= PREVIEW =================
-function previewEvidence(fileUrl) {
-  const modal = document.getElementById("previewModal");
-  const container = document.getElementById("previewContent");
-
-  container.innerHTML = "";
-
-  if (fileUrl.match(/\.(jpg|jpeg|png)$/)) {
-    container.innerHTML = `<img src="${BASE_URL}/${fileUrl}" width="100%">`;
-  } else if (fileUrl.endsWith(".pdf")) {
-    container.innerHTML = `<iframe src="${BASE_URL}/${fileUrl}" width="100%" height="500px"></iframe>`;
-  } else {
-    container.innerHTML = `<p>No preview available</p>`;
-  }
-
-  modal.style.display = "block";
-}
-
-// ================= DELETE =================
-async function deleteEvidence(id) {
-  await fetch(`${BASE_URL}/api/evidence/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
-
-  alert("Deleted 🗑️");
-  loadEvidence();
-}
-
-// ================= HISTORY =================
-async function viewHistory(id) {
-  const res = await fetch(`${BASE_URL}/api/logs/${id}`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
-
-  const data = await res.json();
-
-  const timeline = document.getElementById("timeline");
-  timeline.innerHTML = "";
-
-  data.forEach(log => {
-    const div = document.createElement("div");
-    div.innerHTML = `<b>${log.action}</b><br>${new Date(log.createdAt).toLocaleString()}`;
-    timeline.appendChild(div);
-  });
-}
-
-// ================= CHART =================
-function createChart(total) {
-  const ctx = document.getElementById("evidenceChart");
-  if (!ctx) return;
-
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["Total Evidence"],
-      datasets: [{
-        label: "Stored Evidence",
-        data: [total]
-      }]
-    }
-  });
-}
+// ================= AUTO LOAD =================
+window.onload = loadEvidence;
