@@ -1,40 +1,33 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+  <title>Cases</title>
 
-<title>Cases</title>
+  <link rel="stylesheet" href="style.css">
 
-<link rel="stylesheet" href="style.css">
-
-<script src="js/auth.js"></script>
-<script src="js/cases.js"></script>
-
+  <!-- ✅ auth पहले -->
+  <script src="js/auth.js"></script>
 </head>
 
 <body>
 
 <div class="card">
+  <h2>Create Case</h2>
 
-<h2>Create Case</h2>
+  <input type="text" id="caseTitle" placeholder="Case Title"><br><br>
 
-<input type="text" id="caseTitle" placeholder="Case Title">
+  <input type="text" id="caseOfficer" placeholder="Officer"><br><br>
 
-<input type="text" id="caseOfficer" placeholder="Officer">
-
-<button onclick="createCase()">Create</button>
-
+  <button onclick="createCase()">Create</button>
 </div>
-
 
 <div class="card">
-
-<h2>Case List</h2>
-
-<div id="caseList"></div>
-
+  <h2>Case List</h2>
+  <div id="caseList"></div>
 </div>
 
-</body>
+<!-- ✅ JS END में load करो -->
+<script src="js/cases.js"></script>
 
+</body>
 </html>

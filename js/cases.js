@@ -1,66 +1,88 @@
-const BASE_URL="https://digital-evidence-backend.onrender.com";
+const BASE_URL = "https://digital-evidence-backend.onrender.com";
 
-function getToken(){
-return localStorage.getItem("token");
+// ================= TOKEN =================
+function getToken() {
+  return localStorage.getItem("token");
 }
 
-async function createCase(){
+// ================= CREATE CASE =================
+async function createCase() {
+  const title = document.getElementById("caseTitle").value;
+  const officer = document.getElementById("caseOfficer").value;
 
-const title=document.getElementById("caseTitle").value;
-const officer=document.getElementById("caseOfficer").value;
+  if (!title || !officer) {
+    alert("All fields required ❌");
+    return;
+  }
 
-await fetch(`${BASE_URL}/api/cases`,{
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({ title, officer })
+    });
 
-method:"POST",
+    const data = await res.json();
 
-headers:{
-"Content-Type":"application/json",
-Authorization:`Bearer ${getToken()}`
-},
+    if (!res.ok) {
+      alert(data.message || "Error creating case ❌");
+      return;
+    }
 
-body:JSON.stringify({title,officer})
+    alert("Case Created ✅");
 
-});
+    // clear inputs
+    document.getElementById("caseTitle").value = "";
+    document.getElementById("caseOfficer").value = "";
 
-alert("Case Created");
+    loadCases();
 
-loadCases();
-
+  } catch (err) {
+    console.log(err);
+    alert("Server error ❌");
+  }
 }
 
-async function loadCases(){
+// ================= LOAD CASES =================
+async function loadCases() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/cases`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
 
-const res=await fetch(`${BASE_URL}/api/cases`,{
+    const data = await res.json();
 
-headers:{
-Authorization:`Bearer ${getToken()}`
+    const container = document.getElementById("caseList");
+    container.innerHTML = "";
+
+    if (!data.length) {
+      container.innerHTML = "<p>No Cases Found ❌</p>";
+      return;
+    }
+
+    data.forEach(c => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <h3>${c.title}</h3>
+        <p><b>Officer:</b> ${c.officer}</p>
+        <p><b>Case ID:</b> ${c._id}</p>
+      `;
+
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.log(err);
+    alert("Failed to load cases ❌");
+  }
 }
 
-});
-
-const data=await res.json();
-
-const container=document.getElementById("caseList");
-
-container.innerHTML="";
-
-data.forEach(c=>{
-
-const div=document.createElement("div");
-
-div.className="card";
-
-div.innerHTML=`
-
-<h3>${c.title}</h3>
-<p>Officer: ${c.officer}</p>
-
-`;
-
-container.appendChild(div);
-
-});
-
-}
-
-window.onload=loadCases;
+// ================= AUTO LOAD =================
+window.onload = loadCases;
