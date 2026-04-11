@@ -7,14 +7,16 @@ function getToken() {
 
 // ================= CREATE CASE =================
 async function createCase() {
-  const caseNumber = document.getElementById("caseNumber").value; // 🔥 NEW
   const title = document.getElementById("caseTitle").value;
   const officer = document.getElementById("caseOfficer").value;
 
-  if (!caseNumber || !title || !officer) {
+  if (!title || !officer) {
     alert("All fields required ❌");
     return;
   }
+
+  // 🔥 AUTO CASE NUMBER
+  const caseNumber = "CASE-" + Date.now();
 
   try {
     const res = await fetch(`${BASE_URL}/api/cases`, {
@@ -23,7 +25,7 @@ async function createCase() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`
       },
-      body: JSON.stringify({ caseNumber, title, officer }) // 🔥 FIX
+      body: JSON.stringify({ title, officer, caseNumber })
     });
 
     const data = await res.json();
@@ -35,8 +37,6 @@ async function createCase() {
 
     alert("Case Created ✅");
 
-    // clear inputs
-    document.getElementById("caseNumber").value = "";
     document.getElementById("caseTitle").value = "";
     document.getElementById("caseOfficer").value = "";
 
@@ -59,23 +59,28 @@ async function loadCases() {
 
     const data = await res.json();
 
+    console.log("API Response:", data); // 🔥 DEBUG
+
+    // 🔥 FIX: handle both formats
+    const cases = Array.isArray(data) ? data : data.cases;
+
     const container = document.getElementById("caseList");
     container.innerHTML = "";
 
-    if (!data.length) {
+    if (!cases || cases.length === 0) {
       container.innerHTML = "<p>No Cases Found ❌</p>";
       return;
     }
 
-    data.forEach(c => {
+    cases.forEach(c => {
       const div = document.createElement("div");
       div.className = "card";
 
       div.innerHTML = `
         <h3>${c.title}</h3>
-        <p><b>Case Number:</b> ${c.caseNumber}</p> <!-- 🔥 NEW -->
         <p><b>Officer:</b> ${c.officer}</p>
-        <p><b>Case ID:</b> ${c._id}</p>
+        <p><b>Case Number:</b> ${c.caseNumber}</p>
+        <p><b>ID:</b> ${c._id}</p>
       `;
 
       container.appendChild(div);

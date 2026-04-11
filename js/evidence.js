@@ -16,13 +16,20 @@ async function loadCasesDropdown() {
 
     const data = await res.json();
 
+    console.log("Cases API:", data); // 🔥 DEBUG
+
+    // ✅ FIX (important)
+    const cases = Array.isArray(data) ? data : data.cases;
+
     const select = document.getElementById("caseId");
 
     if (!select) return;
 
     select.innerHTML = `<option value="">Select Case</option>`;
 
-    data.forEach(c => {
+    if (!cases || cases.length === 0) return;
+
+    cases.forEach(c => {
       select.innerHTML += `<option value="${c._id}">${c.title}</option>`;
     });
 
@@ -67,14 +74,22 @@ async function uploadEvidence() {
 
 // ================= LOAD ALL =================
 async function loadEvidence() {
-  const res = await fetch(`${BASE_URL}/api/evidence/all`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/api/evidence/all`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
 
-  const data = await res.json();
-  renderEvidence(data);
+    const data = await res.json();
+
+    console.log("Evidence API:", data); // 🔥 DEBUG
+
+    renderEvidence(data);
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 // ================= SEARCH BY CASE =================
@@ -86,14 +101,22 @@ async function searchByCase() {
     return;
   }
 
-  const res = await fetch(`${BASE_URL}/api/evidence/case/${caseId}`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/api/evidence/case/${caseId}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
 
-  const data = await res.json();
-  renderEvidence(data);
+    const data = await res.json();
+
+    console.log("Search API:", data); // 🔥 DEBUG
+
+    renderEvidence(data);
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 // ================= GROUPED RENDER 🔥 =================
@@ -101,14 +124,17 @@ function renderEvidence(data) {
   const container = document.getElementById("evidenceList");
   container.innerHTML = "";
 
-  if (data.length === 0) {
+  // ✅ FIX (important)
+  const evidences = Array.isArray(data) ? data : data.evidences;
+
+  if (!evidences || evidences.length === 0) {
     container.innerHTML = "<p>No Evidence Found ❌</p>";
     return;
   }
 
   const grouped = {};
 
-  data.forEach(ev => {
+  evidences.forEach(ev => {
     const caseName = ev.case?.title || "No Case";
 
     if (!grouped[caseName]) {
@@ -170,7 +196,7 @@ async function downloadEvidence(id) {
 
   if (contentType && contentType.includes("application/json")) {
     const data = await res.json();
-    alert(data.message); // old file missing
+    alert(data.message);
     return;
   }
 
@@ -213,7 +239,9 @@ async function viewHistory(id) {
   const timeline = document.getElementById("timeline");
   timeline.innerHTML = "";
 
-  data.forEach(log => {
+  const logs = Array.isArray(data) ? data : data.logs;
+
+  logs.forEach(log => {
     const div = document.createElement("div");
     div.innerHTML = `<b>${log.action}</b><br>${new Date(log.createdAt).toLocaleString()}`;
     timeline.appendChild(div);
@@ -222,6 +250,6 @@ async function viewHistory(id) {
 
 // ================= AUTO LOAD =================
 window.onload = () => {
-  loadCasesDropdown(); // 🔥 dropdown auto load
-  loadEvidence();      // 🔥 evidence auto load
+  loadCasesDropdown();
+  loadEvidence();
 };
