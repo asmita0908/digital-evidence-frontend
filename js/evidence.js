@@ -16,18 +16,13 @@ async function loadCasesDropdown() {
 
     const data = await res.json();
 
-    console.log("Cases API:", data); // 🔥 DEBUG
+    const cases = Array.isArray(data) ? data : data.data;
 
-    // ✅ FIX (important)
-    const cases = Array.isArray(data) ? data : data.cases;
-
-    const select = document.getElementById("caseId");
+    const select = document.getElementById("caseSelect"); // ✅ FIX
 
     if (!select) return;
 
     select.innerHTML = `<option value="">Select Case</option>`;
-
-    if (!cases || cases.length === 0) return;
 
     cases.forEach(c => {
       select.innerHTML += `<option value="${c._id}">${c.title}</option>`;
@@ -37,13 +32,12 @@ async function loadCasesDropdown() {
     console.log("Case load error:", err);
   }
 }
-
 // ================= UPLOAD =================
 async function uploadEvidence() {
   const file = document.getElementById("file").files[0];
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
-  const caseId = document.getElementById("caseId").value;
+ const caseId = document.getElementById("caseSelect").value;
 
   if (!file || !title || !description || !caseId) {
     alert("All fields required ❌");
