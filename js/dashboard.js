@@ -17,32 +17,43 @@ window.onload = function () {
     document.getElementById("adminPanel").style.display = "block";
   }
 
-  loadCasesDropdown(); // 🔥 NEW
+  loadCasesDropdown();
   loadEvidence();
 };
 
 // ================= LOAD CASES =================
 async function loadCasesDropdown() {
-  const res = await fetch(`${API}/api/cases`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(`${API}/api/cases`, {
+      headers: { Authorization: "Bearer " + token }
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  const dropdown = document.getElementById("caseSelect");
-  if (!dropdown) return;
+    const dropdown = document.getElementById("caseSelect");
+    if (!dropdown) return;
 
-  dropdown.innerHTML = `<option value="">Select Case</option>`;
+    dropdown.innerHTML = `<option value="">Select Case</option>`;
 
-  data.forEach(c => {
-    const option = document.createElement("option");
-    option.value = c._id;
-    option.textContent = `${c.title}`;
-    dropdown.appendChild(option);
-  });
+    // 🔥 FIX: safe check
+    if (!Array.isArray(data)) {
+      console.log("Invalid cases:", data);
+      return;
+    }
+
+    data.forEach(c => {
+      const option = document.createElement("option");
+      option.value = c._id;
+      option.textContent = c.title;
+      dropdown.appendChild(option);
+    });
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
-// NAVIGATION
+// ================= NAVIGATION =================
 function goToCases() {
   location.href = "cases.html";
 }
@@ -53,12 +64,24 @@ function goToProfile() {
 
 // ================= LOAD ALL =================
 async function loadEvidence() {
-  const res = await fetch(`${API}/api/evidence/all`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(`${API}/api/evidence/all`, {
+      headers: { Authorization: "Bearer " + token }
+    });
 
-  const data = await res.json();
-  renderEvidence(data);
+    const data = await res.json();
+
+    // 🔥 FIX
+    if (!Array.isArray(data)) {
+      console.log("Error:", data);
+      return;
+    }
+
+    renderEvidence(data);
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 // ================= SEARCH BY CASE =================
@@ -70,18 +93,36 @@ async function searchByCase() {
     return;
   }
 
-  const res = await fetch(`${API}/api/evidence/case/${caseId}`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(`${API}/api/evidence/case/${caseId}`, {
+      headers: { Authorization: "Bearer " + token }
+    });
 
-  const data = await res.json();
-  renderEvidence(data);
+    const data = await res.json();
+
+    // 🔥 FIX
+    if (!Array.isArray(data)) {
+      console.log("Error:", data);
+      alert("Invalid Case ID ❌");
+      return;
+    }
+
+    renderEvidence(data);
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 // ================= RENDER =================
 function renderEvidence(list) {
   const container = document.getElementById("evidenceList");
   container.innerHTML = "";
+
+  if (!list.length) {
+    container.innerHTML = "<p>No Evidence Found ❌</p>";
+    return;
+  }
 
   list.forEach(e => {
     container.innerHTML += `
@@ -102,28 +143,8 @@ function renderEvidence(list) {
 
 // ================= DOWNLOAD =================
 async function downloadEvidence(id) {
-  try {
-    const res = await fetch(`${API}/api/evidence/download/${id}`, {
-      headers: { Authorization: "Bearer " + token }
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      alert(data.message || "File missing ❌ (old uploads deleted)");
-      return;
-    }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "file";
-    a.click();
-
-  } catch (err) {
-    alert("Download error");
-  }
+  // 🔥 FIX: direct open (Cloudinary redirect)
+  window.open(`${API}/api/evidence/download/${id}`, "_blank");
 }
 
 // ================= VERIFY =================
@@ -154,12 +175,12 @@ async function downloadCertificate(id) {
   a.click();
 }
 
-// ================= UPLOAD (FIXED) =================
+// ================= UPLOAD =================
 async function uploadEvidence() {
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
   const file = document.getElementById("file").files[0];
-  const caseId = document.getElementById("caseSelect").value; // 🔥 NEW
+  const caseId = document.getElementById("caseSelect").value;
 
   if (!title || !description || !file || !caseId) {
     alert("All fields required ❌");
@@ -170,7 +191,7 @@ async function uploadEvidence() {
   formData.append("title", title);
   formData.append("description", description);
   formData.append("file", file);
-  formData.append("caseId", caseId); // 🔥 IMPORTANT
+  formData.append("caseId", caseId);
 
   const res = await fetch(`${API}/api/evidence/upload`, {
     method: "POST",
@@ -207,6 +228,12 @@ async function loadTimeline(id) {
   const data = await res.json();
 
   let html = "";
+
+  if (!Array.isArray(data)) {
+    document.getElementById("timeline").innerHTML = "No timeline ❌";
+    return;
+  }
+
   data.forEach(t => {
     html += `<p>${t.action} - ${new Date(t.createdAt).toLocaleString()}</p>`;
   });
