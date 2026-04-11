@@ -7,10 +7,11 @@ function getToken() {
 
 // ================= CREATE CASE =================
 async function createCase() {
+  const caseNumber = document.getElementById("caseNumber").value; // 🔥 NEW
   const title = document.getElementById("caseTitle").value;
   const officer = document.getElementById("caseOfficer").value;
 
-  if (!title || !officer) {
+  if (!caseNumber || !title || !officer) {
     alert("All fields required ❌");
     return;
   }
@@ -22,7 +23,7 @@ async function createCase() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`
       },
-      body: JSON.stringify({ title, officer })
+      body: JSON.stringify({ caseNumber, title, officer }) // 🔥 FIX
     });
 
     const data = await res.json();
@@ -35,6 +36,7 @@ async function createCase() {
     alert("Case Created ✅");
 
     // clear inputs
+    document.getElementById("caseNumber").value = "";
     document.getElementById("caseTitle").value = "";
     document.getElementById("caseOfficer").value = "";
 
@@ -71,6 +73,7 @@ async function loadCases() {
 
       div.innerHTML = `
         <h3>${c.title}</h3>
+        <p><b>Case Number:</b> ${c.caseNumber}</p> <!-- 🔥 NEW -->
         <p><b>Officer:</b> ${c.officer}</p>
         <p><b>Case ID:</b> ${c._id}</p>
       `;
