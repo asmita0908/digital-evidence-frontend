@@ -1,4 +1,4 @@
-const BASE_URL = "https://digital-evidence-backend.onrender.com";
+window.BASE_URL = "https://digital-evidence-backend.onrender.com";
 
 // ================= LOGIN =================
 async function loginUser() {

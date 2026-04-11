@@ -1,4 +1,4 @@
-const BASE_URL = "https://digital-evidence-backend.onrender.com";
+const BASE_URL = window.BASE_URL || "https://digital-evidence-backend.onrender.com";
 
 // ================= TOKEN =================
 function getToken() {
