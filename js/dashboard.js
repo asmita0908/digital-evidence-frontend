@@ -190,20 +190,31 @@ async function uploadEvidence() {
   const formData = new FormData();
   formData.append("title", title);
   formData.append("description", description);
-  formData.append("file", file);
   formData.append("caseId", caseId);
+  formData.append("file", file);
 
-  const res = await fetch(`${API}/api/evidence/upload`, {
-    method: "POST",
-    headers: { Authorization: "Bearer " + token },
-    body: formData
-  });
+  try {
+    const res = await fetch(`${API}/api/evidence/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+        // ❌ IMPORTANT: Content-Type mat daalna
+      },
+      body: formData
+    });
 
-  if (res.ok) {
-    alert("Uploaded ✅");
-    loadEvidence();
-  } else {
-    alert("Upload failed ❌");
+    const data = await res.json();
+    console.log("RESPONSE:", data);
+
+    if (res.ok) {
+      alert("✅ Upload successful");
+    } else {
+      alert(data.message || "❌ Upload failed");
+    }
+
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err);
+    alert("❌ Error uploading");
   }
 }
 
