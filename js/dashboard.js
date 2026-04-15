@@ -142,26 +142,8 @@ function renderEvidence(list) {
 }
 
 // ================= DOWNLOAD =================
-async function downloadEvidence(id) {
-  try {
-    const res = await fetch(`${API}/api/evidence/download/${id}`, {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    });
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "evidence";
-    a.click();
-
-  } catch (err) {
-    console.log(err);
-    alert("Download failed ❌");
-  }
+function downloadEvidence(id) {
+  window.open(`${API}/api/evidence/download/${id}`, "_blank");
 }
 
 // ================= VERIFY =================
@@ -237,14 +219,18 @@ async function uploadEvidence() {
 
 // ================= PREVIEW =================
 function previewEvidence(url) {
-  document.getElementById("previewContent").innerHTML =
-    `<img src="${url}" width="100%">`;
+  let content = "";
 
+  if (url.includes(".jpg") || url.includes(".png") || url.includes(".jpeg")) {
+    content = `<img src="${url}" width="100%">`;
+  } else if (url.includes(".pdf")) {
+    content = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
+  } else {
+    content = `<a href="${url}" target="_blank">Open File</a>`;
+  }
+
+  document.getElementById("previewContent").innerHTML = content;
   document.getElementById("previewModal").style.display = "block";
-}
-
-function closePreview() {
-  document.getElementById("previewModal").style.display = "none";
 }
 
 // ================= TIMELINE =================
