@@ -143,8 +143,25 @@ function renderEvidence(list) {
 
 // ================= DOWNLOAD =================
 async function downloadEvidence(id) {
-  // 🔥 FIX: direct open (Cloudinary redirect)
-  window.open(`${API}/api/evidence/download/${id}`, "_blank");
+  try {
+    const res = await fetch(`${API}/api/evidence/download/${id}`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "evidence";
+    a.click();
+
+  } catch (err) {
+    console.log(err);
+    alert("Download failed ❌");
+  }
 }
 
 // ================= VERIFY =================
