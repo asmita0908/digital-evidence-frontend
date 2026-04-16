@@ -246,7 +246,7 @@ async function uploadEvidence() {
 function previewEvidence(url) {
   let content = "";
 
-  if (url.includes(".jpg") || url.includes(".png") || url.includes(".jpeg")) {
+  if (url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
     content = `<img src="${url}" width="100%">`;
   } else if (url.includes(".pdf")) {
     content = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
