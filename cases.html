@@ -2,35 +2,33 @@
 <html>
 <head>
   <title>Cases</title>
-
   <link rel="stylesheet" href="style.css">
 
-  <!-- ✅ auth पहले -->
   <script src="js/auth.js"></script>
+  <script src="js/cases.js"></script>
 </head>
 
 <body>
 
-<div class="card">
+<h1>Case Management</h1>
+
+<button onclick="location.href='dashboard.html'">Back</button>
+
+<!-- CREATE -->
+<div class="card" id="createCaseSection">
   <h2>Create Case</h2>
 
-  <!-- 🔥 NEW FIELD -->
-  <input type="text" id="caseNumber" placeholder="Case Number"><br><br>
-
   <input type="text" id="caseTitle" placeholder="Case Title"><br><br>
-
   <input type="text" id="caseOfficer" placeholder="Officer"><br><br>
 
   <button onclick="createCase()">Create</button>
 </div>
 
+<!-- LIST -->
 <div class="card">
   <h2>Case List</h2>
   <div id="caseList"></div>
 </div>
-
-<!-- ✅ JS END में load करो -->
-<script src="js/cases.js"></script>
 
 </body>
 </html>

@@ -13,13 +13,32 @@ window.onload = function () {
 
   document.getElementById("roleName").innerText = role || "No Role";
 
-  if (role === "admin") {
-    document.getElementById("adminPanel").style.display = "block";
-  }
+  setupUI(role); // 🔥 NEW
 
   loadCasesDropdown();
   loadEvidence();
 };
+
+// ================= ROLE UI =================
+function setupUI(role) {
+  const uploadSection = document.getElementById("uploadSection");
+  const adminPanel = document.getElementById("adminPanel");
+
+  if (uploadSection) uploadSection.style.display = "none";
+  if (adminPanel) adminPanel.style.display = "none";
+
+  if (role === "admin") {
+    uploadSection.style.display = "block";
+    adminPanel.style.display = "block";
+  }
+
+  if (role === "officer") {
+    uploadSection.style.display = "block";
+  }
+
+  // viewer → nothing extra
+  // forensic → only verify options (handled in buttons)
+}
 
 // ================= LOAD CASES =================
 async function loadCasesDropdown() {
@@ -35,11 +54,7 @@ async function loadCasesDropdown() {
 
     dropdown.innerHTML = `<option value="">Select Case</option>`;
 
-    // 🔥 FIX: safe check
-    if (!Array.isArray(data)) {
-      console.log("Invalid cases:", data);
-      return;
-    }
+    if (!Array.isArray(data)) return;
 
     data.forEach(c => {
       const option = document.createElement("option");
@@ -71,11 +86,7 @@ async function loadEvidence() {
 
     const data = await res.json();
 
-    // 🔥 FIX
-    if (!Array.isArray(data)) {
-      console.log("Error:", data);
-      return;
-    }
+    if (!Array.isArray(data)) return;
 
     renderEvidence(data);
 
@@ -84,7 +95,7 @@ async function loadEvidence() {
   }
 }
 
-// ================= SEARCH BY CASE =================
+// ================= SEARCH =================
 async function searchByCase() {
   const caseId = document.getElementById("searchCase").value;
 
@@ -100,9 +111,7 @@ async function searchByCase() {
 
     const data = await res.json();
 
-    // 🔥 FIX
     if (!Array.isArray(data)) {
-      console.log("Error:", data);
       alert("Invalid Case ID ❌");
       return;
     }
@@ -119,6 +128,8 @@ function renderEvidence(list) {
   const container = document.getElementById("evidenceList");
   container.innerHTML = "";
 
+  const role = localStorage.getItem("role");
+
   if (!list.length) {
     container.innerHTML = "<p>No Evidence Found ❌</p>";
     return;
@@ -132,13 +143,50 @@ function renderEvidence(list) {
         <p><b>Case:</b> ${e.case?.title || e.case}</p>
 
         <button onclick="previewEvidence('${e.fileUrl}')">Preview</button>
-        <button onclick="downloadEvidence('${e._id}')">Download</button>
-        <button onclick="verifyEvidence('${e._id}')">Verify</button>
-        <button onclick="downloadCertificate('${e._id}')">Certificate</button>
+
+        ${
+          role !== "viewer"
+            ? `<button onclick="downloadEvidence('${e._id}')">Download</button>`
+            : ""
+        }
+
+        ${
+          role === "forensic" || role === "admin"
+            ? `<button onclick="verifyEvidence('${e._id}')">Verify</button>`
+            : ""
+        }
+
+        ${
+          role === "forensic" || role === "admin"
+            ? `<button onclick="downloadCertificate('${e._id}')">Certificate</button>`
+            : ""
+        }
+
+        ${
+          role === "admin"
+            ? `<button onclick="deleteEvidence('${e._id}')">Delete</button>`
+            : ""
+        }
+
         <button onclick="loadTimeline('${e._id}')">Timeline</button>
       </div>
     `;
   });
+}
+
+// ================= DELETE =================
+async function deleteEvidence(id) {
+  if (!confirm("Delete this evidence?")) return;
+
+  const res = await fetch(`${API}/api/evidence/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  loadEvidence();
 }
 
 // ================= DOWNLOAD =================
@@ -166,10 +214,10 @@ async function downloadEvidence(id) {
     a.remove();
 
   } catch (err) {
-    console.log(err);
     alert("Download error ❌");
   }
 }
+
 // ================= VERIFY =================
 async function verifyEvidence(id) {
   const res = await fetch(`${API}/api/evidence/verify/${id}`, {
@@ -221,22 +269,20 @@ async function uploadEvidence() {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`
-        // ❌ IMPORTANT: Content-Type mat daalna
       },
       body: formData
     });
 
     const data = await res.json();
-    console.log("RESPONSE:", data);
 
     if (res.ok) {
       alert("✅ Upload successful");
+      loadEvidence();
     } else {
       alert(data.message || "❌ Upload failed");
     }
 
   } catch (err) {
-    console.error("UPLOAD ERROR:", err);
     alert("❌ Error uploading");
   }
 }
@@ -244,7 +290,7 @@ async function uploadEvidence() {
 // ================= PREVIEW =================
 function previewEvidence(url) {
   if (!url) {
-    alert("No file URL ❌");
+    alert("No file ❌");
     return;
   }
 
@@ -283,6 +329,8 @@ async function loadTimeline(id) {
 
   document.getElementById("timeline").innerHTML = html;
 }
+
+// ================= CLOSE =================
 function closePreview() {
   document.getElementById("previewModal").style.display = "none";
 }

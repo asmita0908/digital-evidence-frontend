@@ -1,11 +1,24 @@
-const BASE_URL = window.BASE_URL || "https://digital-evidence-backend.onrender.com";
+const BASE_URL = "https://digital-evidence-backend.onrender.com";
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
 
-// ================= TOKEN =================
-function getToken() {
-  return localStorage.getItem("token");
+// 🔐 protect
+if (!token) {
+  location.href = "index.html";
 }
 
-// ================= CREATE CASE =================
+// ================= INIT =================
+window.onload = function () {
+
+  // 🔥 ROLE CONTROL
+  if (role !== "admin" && role !== "officer") {
+    document.getElementById("createCaseSection").style.display = "none";
+  }
+
+  loadCases();
+};
+
+// ================= CREATE =================
 async function createCase() {
   const title = document.getElementById("caseTitle").value;
   const officer = document.getElementById("caseOfficer").value;
@@ -15,82 +28,60 @@ async function createCase() {
     return;
   }
 
-  // 🔥 AUTO CASE NUMBER
   const caseNumber = "CASE-" + Date.now();
 
-  try {
-    const res = await fetch(`${BASE_URL}/api/cases`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`
-      },
-      body: JSON.stringify({ title, officer, caseNumber })
-    });
+  const res = await fetch(`${BASE_URL}/api/cases`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({ title, officer, caseNumber })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
+  alert(data.message);
 
-    if (!res.ok) {
-      alert(data.message || "Error creating case ❌");
-      return;
-    }
-
-    alert("Case Created ✅");
-
-    document.getElementById("caseTitle").value = "";
-    document.getElementById("caseOfficer").value = "";
-
-    loadCases();
-
-  } catch (err) {
-    console.log(err);
-    alert("Server error ❌");
-  }
+  loadCases();
 }
 
-// ================= LOAD CASES =================
+// ================= LOAD =================
 async function loadCases() {
-  try {
-    const res = await fetch(`${BASE_URL}/api/cases`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    });
+  const res = await fetch(`${BASE_URL}/api/cases`, {
+    headers: { Authorization: "Bearer " + token }
+  });
 
-    const data = await res.json();
+  const data = await res.json();
+  const cases = Array.isArray(data) ? data : data.cases;
 
-    console.log("API Response:", data); // 🔥 DEBUG
+  const container = document.getElementById("caseList");
+  container.innerHTML = "";
 
-    // 🔥 FIX: handle both formats
-    const cases = Array.isArray(data) ? data : data.cases;
-
-    const container = document.getElementById("caseList");
-    container.innerHTML = "";
-
-    if (!cases || cases.length === 0) {
-      container.innerHTML = "<p>No Cases Found ❌</p>";
-      return;
-    }
-
-    cases.forEach(c => {
-      const div = document.createElement("div");
-      div.className = "card";
-
-      div.innerHTML = `
+  cases.forEach(c => {
+    container.innerHTML += `
+      <div class="card">
         <h3>${c.title}</h3>
-        <p><b>Officer:</b> ${c.officer}</p>
-        <p><b>Case Number:</b> ${c.caseNumber}</p>
-        <p><b>ID:</b> ${c._id}</p>
-      `;
+        <p>Officer: ${c.officer}</p>
+        <p>Case No: ${c.caseNumber}</p>
 
-      container.appendChild(div);
-    });
-
-  } catch (err) {
-    console.log(err);
-    alert("Failed to load cases ❌");
-  }
+        ${
+          role === "admin"
+            ? `<button onclick="deleteCase('${c._id}')">Delete</button>`
+            : ""
+        }
+      </div>
+    `;
+  });
 }
 
-// ================= AUTO LOAD =================
-window.onload = loadCases;
+// ================= DELETE =================
+async function deleteCase(id) {
+  if (!confirm("Delete case?")) return;
+
+  await fetch(`${BASE_URL}/api/cases/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  loadCases();
+}
