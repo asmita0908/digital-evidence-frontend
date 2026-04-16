@@ -142,10 +142,34 @@ function renderEvidence(list) {
 }
 
 // ================= DOWNLOAD =================
-function downloadEvidence(id) {
-  window.open(`${API}/api/evidence/download/${id}`, "_blank");
-}
+async function downloadEvidence(id) {
+  try {
+    const res = await fetch(`${API}/api/evidence/download/${id}`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
 
+    if (!res.ok) {
+      alert("Download failed ❌");
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "evidence";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+  } catch (err) {
+    console.log(err);
+    alert("Download error ❌");
+  }
+}
 // ================= VERIFY =================
 async function verifyEvidence(id) {
   const res = await fetch(`${API}/api/evidence/verify/${id}`, {
