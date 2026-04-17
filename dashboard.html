@@ -4,9 +4,6 @@
   <title>Digital Evidence Dashboard</title>
   <link rel="stylesheet" href="style.css">
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
   <script src="js/auth.js"></script>
   <script src="js/dashboard.js"></script>
 </head>
@@ -22,96 +19,14 @@
   <h3>User Role: <span id="roleName"></span></h3>
 </div>
 
-<!-- NAVIGATION -->
-<div class="card">
-  <h2>Navigation</h2>
-  <button onclick="goToCases()">Cases</button>
-  <button onclick="goToProfile()">Profile</button>
-</div>
-
-<!-- ADMIN PANEL -->
-<div class="card" id="adminPanel" style="display:none">
-  <h2>Admin Panel</h2>
-  <button onclick="location.href='admin.html'">Manage Users</button>
-  <button onclick="location.href='logs.html'">Logs</button>
-</div>
-
-<!-- UPLOAD -->
-<!-- UPLOAD -->
-<div class="card" id="uploadSection">
-  <h2>Upload Evidence</h2>
-
-  <input id="title" placeholder="Title"><br><br>
-  <input id="description" placeholder="Description"><br><br>
-
-  <select id="caseSelect"></select><br><br>
-
-  <input type="file" id="file"><br><br>
-
-  <button onclick="uploadEvidence()">Upload</button>
-</div>
-
-  <!-- ✅ CASE DROPDOWN -->
-  <select id="caseSelect">
-    <option value="">Select Case</option>
-  </select><br><br>
-
-  <input type="file" id="file"><br><br>
-
-  <button onclick="uploadEvidence()">Upload</button>
-</div>
-
-<!-- SEARCH -->
-<div class="card">
-  <h2>Search by Case</h2>
-
-  <input id="searchCase" placeholder="Enter Case ID (paste from cases page)">
-
-  <button onclick="searchByCase()">Search</button>
-  <button onclick="loadEvidence()">Show All</button>
-</div>
-
-<!-- LIST -->
-<div class="card">
-  <h2>Evidence List</h2>
-  <div id="evidenceList"></div>
-</div>
-
-<!-- TIMELINE -->
-<div class="card">
-  <h2>Timeline</h2>
-  <div id="timeline"></div>
-</div>
-<!-- PREVIEW MODAL -->
-<div id="previewModal" style="display:none; background:#000000aa; position:fixed; top:0; left:0; width:100%; height:100%;">
-  <div style="background:#fff; margin:50px auto; padding:20px; width:60%;">
-    <button onc<!DOCTYPE html>
-<html>
-<head>
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-
-  <script src="js/auth.js"></script>
-  <script src="js/dashboard.js"></script>
-</head>
-
-<body>
-
-<h1>Digital Evidence Dashboard</h1>
-
-<button onclick="logout()">Logout</button>
-
-<div class="card">
-  <h3>User Role: <span id="roleName"></span></h3>
-</div>
-
+<!-- NAV -->
 <div class="card">
   <button onclick="goToCases()">Cases</button>
   <button onclick="goToProfile()">Profile</button>
 </div>
 
 <!-- ADMIN -->
-<div class="card" id="adminPanel">
+<div class="card" id="adminPanel" style="display:none">
   <h2>Admin Panel</h2>
   <button onclick="location.href='admin.html'">Users</button>
   <button onclick="location.href='logs.html'">Logs</button>
@@ -124,7 +39,9 @@
   <input id="title" placeholder="Title"><br><br>
   <input id="description" placeholder="Description"><br><br>
 
-  <select id="caseSelect"></select><br><br>
+  <select id="caseSelect">
+    <option value="">Select Case</option>
+  </select><br><br>
 
   <input type="file" id="file"><br><br>
 
@@ -133,7 +50,7 @@
 
 <!-- SEARCH -->
 <div class="card">
-  <input id="searchCase" placeholder="Case ID">
+  <input id="searchCase" placeholder="Enter Case ID">
   <button onclick="searchByCase()">Search</button>
   <button onclick="loadEvidence()">All</button>
 </div>
@@ -151,13 +68,9 @@
 </div>
 
 <!-- PREVIEW -->
-<div id="previewModal" style="display:none;">
-  <button onclick="closePreview()">Close</button>
-  <div id="previewContent"></div>
-</div>
-
-</body>
-</html>lick="closePreview()">Close</button>
+<div id="previewModal" style="display:none; background:#000000aa; position:fixed; top:0; left:0; width:100%; height:100%;">
+  <div style="background:#fff; margin:50px auto; padding:20px; width:60%;">
+    <button onclick="closePreview()">Close</button>
     <div id="previewContent"></div>
   </div>
 </div>

@@ -140,7 +140,8 @@ function renderEvidence(list) {
       <div class="card">
         <h3>${e.title}</h3>
         <p>${e.description}</p>
-        <p><b>Case:</b> ${e.case?.title || e.case}</p>
+        <p><b>Case:</b> ${e.case?.title || "No Case"}</p>
+        <p><b>Case ID:</b> ${e.case?._id || e.case}</p>
 
         <button onclick="previewEvidence('${e.fileUrl}')">Preview</button>
 
@@ -289,18 +290,22 @@ async function uploadEvidence() {
 
 // ================= PREVIEW =================
 function previewEvidence(url) {
-  if (!url) {
-    alert("No file ❌");
+  console.log("Preview URL:", url); // DEBUG
+
+  if (!url || url === "") {
+    alert("No file found ❌");
     return;
   }
 
   let content = "";
 
   if (url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
-    content = `<img src="${url}" width="100%">`;
-  } else if (url.includes("pdf")) {
+    content = `<img src="${url}" style="width:100%">`;
+  } 
+  else if (url.includes(".pdf")) {
     content = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
-  } else {
+  } 
+  else {
     content = `<a href="${url}" target="_blank">Open File</a>`;
   }
 
