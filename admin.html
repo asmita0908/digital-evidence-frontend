@@ -9,7 +9,29 @@
 <div class="container">
     <h2>🛡 Admin Control Panel</h2>
 
-    <div id="userList"></div>
+    <!-- ✅ CREATE USER -->
+    <div class="card">
+        <h3>Create User</h3>
+
+        <input id="name" placeholder="Name"><br><br>
+        <input id="email" placeholder="Email"><br><br>
+        <input id="password" placeholder="Password"><br><br>
+
+        <select id="role">
+            <option value="viewer">Viewer</option>
+            <option value="officer">Officer</option>
+            <option value="forensic">Forensic</option>
+            <option value="admin">Admin</option>
+        </select><br><br>
+
+        <button onclick="createUser()">Create</button>
+    </div>
+
+    <!-- ✅ USER LIST -->
+    <div class="card">
+        <h3>All Users</h3>
+        <div id="userList"></div>
+    </div>
 
     <button onclick="logout()">Logout</button>
 </div>
