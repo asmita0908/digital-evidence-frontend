@@ -21,10 +21,9 @@ window.onload = function () {
 // ================= CREATE =================
 async function createCase() {
   const title = document.getElementById("caseTitle").value;
-  const officer = document.getElementById("caseOfficer").value;
 
-  if (!title || !officer) {
-    alert("All fields required ❌");
+  if (!title) {
+    alert("Title required ❌");
     return;
   }
 
@@ -36,11 +35,11 @@ async function createCase() {
       "Content-Type": "application/json",
       Authorization: "Bearer " + token
     },
-    body: JSON.stringify({ title, officer, caseNumber })
+    body: JSON.stringify({ title, caseNumber })
   });
 
   const data = await res.json();
-  alert(data.message);
+  alert("Case Created ✅");
 
   loadCases();
 }
@@ -58,20 +57,18 @@ async function loadCases() {
   container.innerHTML = "";
 
   cases.forEach(c => {
-    container.innerHTML += `
-      <div class="card">
-        <h3>${c.title}</h3>
-        <p>Officer: ${c.officer}</p>
-        <p>Case No: ${c.caseNumber}</p>
+  const div = document.createElement("div");
+  div.className = "card";
 
-        ${
-          role === "admin"
-            ? `<button onclick="deleteCase('${c._id}')">Delete</button>`
-            : ""
-        }
-      </div>
-    `;
-  });
+  div.innerHTML = `
+    <h3>${c.title}</h3>
+    <p><b>Officer:</b> ${c.officer?.name || "N/A"}</p>
+    <p><b>Case Number:</b> ${c.caseNumber}</p>
+    <p><b>ID:</b> ${c._id}</p>
+  `;
+
+  container.appendChild(div);
+});
 }
 
 // ================= DELETE =================
