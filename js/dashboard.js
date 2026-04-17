@@ -315,24 +315,30 @@ function previewEvidence(url) {
 
 // ================= TIMELINE =================
 async function loadTimeline(id) {
-  const res = await fetch(`${API}/api/custody/timeline/${id}`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(`${API}/api/custody/timeline/${id}`, {
+      headers: { Authorization: "Bearer " + token }
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  let html = "";
+    let html = "";
 
-  if (!Array.isArray(data)) {
-    document.getElementById("timeline").innerHTML = "No timeline ❌";
-    return;
+    if (!Array.isArray(data) || data.length === 0) {
+      document.getElementById("timeline").innerHTML = "No timeline ❌";
+      return;
+    }
+
+    data.forEach(t => {
+      html += `<p>${t.action} - ${new Date(t.createdAt).toLocaleString()}</p>`;
+    });
+
+    document.getElementById("timeline").innerHTML = html;
+
+  } catch (err) {
+    console.log(err);
+    document.getElementById("timeline").innerHTML = "Error loading timeline ❌";
   }
-
-  data.forEach(t => {
-    html += `<p>${t.action} - ${new Date(t.createdAt).toLocaleString()}</p>`;
-  });
-
-  document.getElementById("timeline").innerHTML = html;
 }
 
 // ================= CLOSE =================
