@@ -65,6 +65,12 @@ async function loadCases() {
     <p><b>Officer:</b> ${c.officer?.name || "N/A"}</p>
     <p><b>Case Number:</b> ${c.caseNumber}</p>
     <p><b>ID:</b> ${c._id}</p>
+
+    ${
+      role === "admin"
+        ? `<button onclick="deleteCase('${c._id}')">Delete</button>`
+        : ""
+    }
   `;
 
   container.appendChild(div);

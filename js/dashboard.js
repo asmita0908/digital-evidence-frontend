@@ -290,29 +290,53 @@ async function uploadEvidence() {
 
 // ================= PREVIEW =================
 function previewEvidence(url) {
-  console.log("Preview URL:", url); // DEBUG
-
-  if (!url || url === "") {
-    alert("No file found ❌");
+  if (!url) {
+    alert("No file ❌");
     return;
   }
 
   let content = "";
 
+  // 🖼 IMAGE
   if (url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
-    content = `<img src="${url}" style="width:100%">`;
-  } 
-  else if (url.includes(".pdf")) {
-    content = `<iframe src="${url}" width="100%" height="500px"></iframe>`;
-  } 
+    content = `
+      <img src="${url}" 
+           style="width:100%; height:auto; display:block;">
+    `;
+  }
+
+  // 📄 PDF
+  else if (url.includes("pdf")) {
+    content = `
+      <iframe 
+        src="${url}" 
+        style="width:100%; height:80vh; border:none;">
+      </iframe>
+    `;
+  }
+
+  // 🎥 VIDEO
+  else if (url.match(/\.(mp4|webm|ogg)/i)) {
+    content = `
+      <video controls style="width:100%; max-height:80vh;">
+        <source src="${url}">
+        Your browser does not support video.
+      </video>
+    `;
+  }
+
+  // 📁 OTHER FILES
   else {
-    content = `<a href="${url}" target="_blank">Open File</a>`;
+    content = `
+      <a href="${url}" target="_blank">
+        Open File
+      </a>
+    `;
   }
 
   document.getElementById("previewContent").innerHTML = content;
   document.getElementById("previewModal").style.display = "block";
 }
-
 // ================= TIMELINE =================
 async function loadTimeline(id) {
   try {
@@ -341,7 +365,11 @@ async function loadTimeline(id) {
   }
 }
 
-// ================= CLOSE =================
-function closePreview() {
-  document.getElementById("previewModal").style.display = "none";
-}
+
+// ================= CLOSE ON OUTSIDE CLICK =================
+window.onclick = function (e) {
+  const modal = document.getElementById("previewModal");
+  if (e.target === modal) {
+    modal.style.display = "none";
+  }
+};

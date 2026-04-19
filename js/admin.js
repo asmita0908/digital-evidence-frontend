@@ -26,10 +26,9 @@ async function loadUsers() {
 
         <!-- UPDATE ROLE -->
         <select onchange="updateRole('${user._id}', this.value)">
-          <option value="viewer">Viewer</option>
-          <option value="officer">Officer</option>
-          <option value="forensic">Forensic</option>
-          <option value="admin">Admin</option>
+        <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+        <option value="officer" ${user.role === "officer" ? "selected" : ""}>Officer</option>
+        <option value="viewer" ${user.role === "viewer" ? "selected" : ""}>Viewer</option>
         </select>
 
         <!-- DELETE -->
