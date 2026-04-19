@@ -79,3 +79,51 @@ function logout() {
   localStorage.clear(); // 🔥 better
   window.location.href = "index.html";
 }
+function showForgot(){
+  const box = document.getElementById("forgotBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+
+async function sendOTP(){
+  const email = document.getElementById("fEmail").value;
+
+  const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ email })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
+
+
+async function verifyOTP(){
+  const email = document.getElementById("fEmail").value;
+  const otp = document.getElementById("otp").value;
+
+  const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ email, otp })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
+
+
+async function resetPassword(){
+  const email = document.getElementById("fEmail").value;
+  const newPassword = document.getElementById("newPass").value;
+
+  const res = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ email, newPassword })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
