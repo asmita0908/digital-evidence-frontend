@@ -18,8 +18,8 @@ async function loginUser() {
 
     console.log("LOGIN RESPONSE:", data);
 
-    // ✅ SAFE CHECK (IMPORTANT)
-    if (res.ok && data.token && data.user) {
+    // 🔥 FIXED CONDITION
+    if (data.token) {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
@@ -28,10 +28,10 @@ async function loginUser() {
 
       alert("Login Success ✅");
 
+      // redirect
       window.location.href = "dashboard.html";
 
     } else {
-      console.log("Login Failed Data:", data);
       alert(data.message || "Login Failed ❌");
     }
 

@@ -289,53 +289,56 @@ async function uploadEvidence() {
 }
 
 // ================= PREVIEW =================
-function previewEvidence(url) {
+async function previewEvidence(url) {
   if (!url) {
     alert("No file ❌");
     return;
   }
 
-  let content = "";
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token")
+      }
+    });
 
-  // 🖼 IMAGE
-  if (url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
-    content = `
-      <img src="${url}" 
-           style="width:100%; height:auto; display:block;">
-    `;
+    if (!res.ok) {
+      alert("Unauthorized ❌");
+      return;
+    }
+
+    const blob = await res.blob();
+    const fileURL = URL.createObjectURL(blob);
+
+    let content = "";
+
+    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      content = `<img src="${fileURL}" style="width:100%;">`;
+    }
+
+    else if (url.match(/\.pdf$/i)) {
+      content = `<iframe src="${fileURL}" style="width:100%; height:80vh;"></iframe>`;
+    }
+
+    else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+      content = `
+        <video controls style="width:100%;">
+          <source src="${fileURL}">
+        </video>
+      `;
+    }
+
+    else {
+      content = `<a href="${fileURL}" target="_blank">Open File</a>`;
+    }
+
+    document.getElementById("previewContent").innerHTML = content;
+    document.getElementById("previewModal").style.display = "block";
+
+  } catch (err) {
+    console.log(err);
+    alert("Preview failed ❌");
   }
-
-  // 📄 PDF
-  else if (url.includes("pdf")) {
-    content = `
-      <iframe 
-        src="${url}" 
-        style="width:100%; height:80vh; border:none;">
-      </iframe>
-    `;
-  }
-
-  // 🎥 VIDEO
-  else if (url.match(/\.(mp4|webm|ogg)/i)) {
-    content = `
-      <video controls style="width:100%; max-height:80vh;">
-        <source src="${url}">
-        Your browser does not support video.
-      </video>
-    `;
-  }
-
-  // 📁 OTHER FILES
-  else {
-    content = `
-      <a href="${url}" target="_blank">
-        Open File
-      </a>
-    `;
-  }
-
-  document.getElementById("previewContent").innerHTML = content;
-  document.getElementById("previewModal").style.display = "block";
 }
 // ================= TIMELINE =================
 async function loadTimeline(id) {
@@ -373,3 +376,6 @@ window.onclick = function (e) {
     modal.style.display = "none";
   }
 };
+function closePreview() {
+  document.getElementById("previewModal").style.display = "none";
+}
