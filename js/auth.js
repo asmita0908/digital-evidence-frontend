@@ -127,3 +127,35 @@ async function resetPassword(){
   const data = await res.json();
   alert(data.message);
 }
+
+async function fingerprintLogin() {
+
+  const email = document.getElementById("email").value;
+
+  // 1. get options
+  const res = await fetch(`/api/auth/webauthn/login-options?email=${email}`);
+  const options = await res.json();
+
+  // 2. ask browser for fingerprint
+  const credential = await navigator.credentials.get({
+    publicKey: options
+  });
+
+  // 3. send to server
+  const verify = await fetch("/api/auth/webauthn/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email,
+      credential
+    })
+  });
+
+  const data = await verify.json();
+
+  if (data.success) {
+    alert("Login successful ✅");
+  } else {
+    alert("Fingerprint failed ❌");
+  }
+}
