@@ -1,77 +1,32 @@
 window.BASE_URL = "https://digital-evidence-backend.onrender.com";
 
+let timer;
+let attempts = 0; // 🔥 max 3 attempts
+
 // ================= LOGIN =================
 async function loginUser() {
-  try {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    const res = await fetch(`${BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
+  const res = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ email, password })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
-      localStorage.setItem("name", data.user.name);
-      localStorage.setItem("email", data.user.email);
-
-      alert("Login Success ✅");
-      window.location.href = "dashboard.html";
-    } else {
-      alert(data.message || "Login Failed ❌");
-    }
-
-  } catch (error) {
-    console.log(error);
-    alert("Server Error ❌");
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.user.role);
+    alert("Login Success ✅");
+    window.location.href = "dashboard.html";
+  } else {
+    alert(data.message);
   }
 }
 
-// ================= REGISTER =================
-async function registerUser() {
-  try {
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const role = document.getElementById("role").value;
-
-    const res = await fetch(`${BASE_URL}/api/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ name, email, password, role })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Registration Successful ✅");
-      window.location.href = "index.html";
-    } else {
-      alert(data.message || "Registration Failed ❌");
-    }
-
-  } catch (error) {
-    console.log(error);
-    alert("Server Error ❌");
-  }
-}
-
-// ================= LOGOUT =================
-function logout() {
-  localStorage.clear();
-  window.location.href = "index.html";
-}
-
-// ================= FORGOT UI =================
+// ================= SHOW FORGOT =================
 function showForgot(){
   const box = document.getElementById("forgotBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
@@ -83,31 +38,65 @@ async function sendOTP() {
 
   const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ email })
   });
 
   const data = await res.json();
   alert(data.message);
+
+  attempts = 0; // reset attempts
+  startTimer();
+}
+
+// ================= TIMER =================
+function startTimer() {
+  let timeLeft = 300;
+
+  clearInterval(timer);
+
+  timer = setInterval(() => {
+    const min = Math.floor(timeLeft / 60);
+    const sec = timeLeft % 60;
+
+    document.getElementById("timerText").innerText =
+      `OTP expires in: ${min}:${sec < 10 ? "0" : ""}${sec}`;
+
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      document.getElementById("timerText").innerText = "OTP expired ❌";
+    }
+
+    timeLeft--;
+  }, 1000);
 }
 
 // ================= VERIFY OTP =================
 async function verifyOTP() {
+
+  if (attempts >= 3) {
+    alert("❌ Too many attempts. Resend OTP");
+    return;
+  }
+
   const email = document.getElementById("fEmail").value;
   const otp = document.getElementById("otp").value;
 
   const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ email, otp })
   });
 
   const data = await res.json();
-  alert(data.message);
+
+  if (data.message.includes("Invalid")) {
+    attempts++;
+    alert(`❌ Wrong OTP (${attempts}/3)`);
+  } else {
+    alert("OTP Verified ✅");
+    clearInterval(timer);
+  }
 }
 
 // ================= RESET PASSWORD =================
@@ -118,46 +107,10 @@ async function resetPassword() {
 
   const res = await fetch(`${BASE_URL}/api/auth/reset-password`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      email,
-      otp,
-      newPassword
-    })
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ email, otp, newPassword })
   });
 
   const data = await res.json();
   alert(data.message);
-}
-
-// ================= FINGERPRINT =================
-async function fingerprintLogin() {
-
-  const email = document.getElementById("email").value;
-
-  const res = await fetch(`${BASE_URL}/api/auth/webauthn/login-options?email=${email}`);
-  const options = await res.json();
-
-  const credential = await navigator.credentials.get({
-    publicKey: options
-  });
-
-  const verify = await fetch(`${BASE_URL}/api/auth/webauthn/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email,
-      ...credential
-    })
-  });
-
-  const data = await verify.json();
-
-  if (data.success) {
-    alert("Login successful ✅");
-  } else {
-    alert("Fingerprint failed ❌");
-  }
 }
