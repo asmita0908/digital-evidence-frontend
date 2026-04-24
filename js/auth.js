@@ -16,31 +16,23 @@ async function loginUser() {
 
     const data = await res.json();
 
-    console.log("LOGIN RESPONSE:", data);
-
-    // 🔥 FIXED CONDITION
     if (data.token) {
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
       localStorage.setItem("name", data.user.name);
       localStorage.setItem("email", data.user.email);
 
       alert("Login Success ✅");
-
-      // redirect
       window.location.href = "dashboard.html";
-
     } else {
       alert(data.message || "Login Failed ❌");
     }
 
   } catch (error) {
-    console.log("Login Error:", error);
+    console.log(error);
     alert("Server Error ❌");
   }
 }
-
 
 // ================= REGISTER =================
 async function registerUser() {
@@ -68,27 +60,28 @@ async function registerUser() {
     }
 
   } catch (error) {
-    console.log("Register Error:", error);
+    console.log(error);
     alert("Server Error ❌");
   }
 }
 
-
 // ================= LOGOUT =================
 function logout() {
-  localStorage.clear(); // 🔥 better
+  localStorage.clear();
   window.location.href = "index.html";
 }
+
+// ================= FORGOT UI =================
 function showForgot(){
   const box = document.getElementById("forgotBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-
+// ================= SEND OTP =================
 async function sendOTP() {
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("fEmail").value;
 
-  const res = await fetch(`${API}/api/auth/forgot-password`, {
+  const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -100,12 +93,12 @@ async function sendOTP() {
   alert(data.message);
 }
 
-
+// ================= VERIFY OTP =================
 async function verifyOTP() {
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("fEmail").value;
   const otp = document.getElementById("otp").value;
 
-  const res = await fetch(`${API}/api/auth/verify-otp`, {
+  const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -117,43 +110,46 @@ async function verifyOTP() {
   alert(data.message);
 }
 
+// ================= RESET PASSWORD =================
 async function resetPassword() {
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("fEmail").value;
   const otp = document.getElementById("otp").value;
   const newPassword = document.getElementById("newPassword").value;
 
-  const res = await fetch(`${API}/api/auth/reset-password`, {
+  const res = await fetch(`${BASE_URL}/api/auth/reset-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ email, otp, newPassword })
+    body: JSON.stringify({
+      email,
+      otp,
+      newPassword
+    })
   });
 
   const data = await res.json();
   alert(data.message);
 }
 
+// ================= FINGERPRINT =================
 async function fingerprintLogin() {
 
   const email = document.getElementById("email").value;
 
-  // 1. get options
-  const res = await fetch(`/api/auth/webauthn/login-options?email=${email}`);
+  const res = await fetch(`${BASE_URL}/api/auth/webauthn/login-options?email=${email}`);
   const options = await res.json();
 
-  // 2. ask browser for fingerprint
   const credential = await navigator.credentials.get({
     publicKey: options
   });
 
-  // 3. send to server
-  const verify = await fetch("/api/auth/webauthn/login", {
+  const verify = await fetch(`${BASE_URL}/api/auth/webauthn/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email,
-      credential
+      ...credential
     })
   });
 
