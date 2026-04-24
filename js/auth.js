@@ -85,12 +85,14 @@ function showForgot(){
 }
 
 
-async function sendOTP(){
-  const email = document.getElementById("fEmail").value;
+async function sendOTP() {
+  const email = document.getElementById("email").value;
 
-  const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+  const res = await fetch(`${API}/api/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ email })
   });
 
@@ -99,13 +101,15 @@ async function sendOTP(){
 }
 
 
-async function verifyOTP(){
-  const email = document.getElementById("fEmail").value;
+async function verifyOTP() {
+  const email = document.getElementById("email").value;
   const otp = document.getElementById("otp").value;
 
-  const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+  const res = await fetch(`${API}/api/auth/verify-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ email, otp })
   });
 
@@ -113,15 +117,17 @@ async function verifyOTP(){
   alert(data.message);
 }
 
+async function resetPassword() {
+  const email = document.getElementById("email").value;
+  const otp = document.getElementById("otp").value;
+  const newPassword = document.getElementById("newPassword").value;
 
-async function resetPassword(){
-  const email = document.getElementById("fEmail").value;
-  const newPassword = document.getElementById("newPass").value;
-
-  const res = await fetch(`${BASE_URL}/api/auth/reset-password`, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({ email, newPassword })
+  const res = await fetch(`${API}/api/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, otp, newPassword })
   });
 
   const data = await res.json();
