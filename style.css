@@ -82,18 +82,13 @@ body {
 
 .card {
   background: #9ccfd8;
-
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 600px;
   width: 100%;
-  max-width: 850px;
-
-  padding: 38px;
-
-  border-radius: 22px;
-
-  margin: 0 auto 20px;
-
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-
+  margin: auto;
+  margin-bottom: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
   text-align: left;
 }
 
